@@ -1,0 +1,39 @@
+name: Bug in the CLI
+description: A command does the wrong thing, crashes, or says something unhelpful.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Questions about an Orla account, a plan, or something the app did belong
+        at support@orla.finance. This tracker is for the client.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: "`npx orla --version`, or the version you installed."
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Node and OS
+      description: "`node -v` and which OS. The keychain path differs by platform."
+      placeholder: "v22.14.0, macOS 15.3"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: The command you ran
+      description: Redact anything you would not put in a public issue. Amounts and payee names are yours, not ours.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true

@@ -1,0 +1,41 @@
+name: release
+
+# A tag is the release. Nothing publishes from a laptop and no long-lived npm
+# token exists to leak: npm mints a short-lived credential from this workflow's
+# OIDC identity, which is also what puts a provenance attestation on the
+# published version. Configure the trusted publisher once on npmjs.com for the
+# package `orla`: this repository, workflow `release.yml`.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs a recent npm; the one bundled with Node 22 is
+      # older than the feature.
+      - run: npm install -g npm@latest
+      - run: npm install
+      - run: npm run check
+      - run: npm run build
+      # The tag and the manifest have to agree, or `npm view orla` starts
+      # disagreeing with `git tag` and nobody can tell which version is which.
+      - name: Tag matches package.json
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $pkg"
+            exit 1
+          fi
+      - run: npm publish --access public

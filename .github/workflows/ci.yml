@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run check
+      - run: npm run build
+      # The package ships `dist/` and nothing else. If the build stopped
+      # emitting the entrypoint, `npx orla` installs a package with no binary
+      # and the failure lands on somebody else's machine, not here.
+      - run: test -f dist/index.js
+      # What `npm publish` would actually upload. A stray file in `files:` is
+      # cheaper to catch here than to unpublish.
+      - run: npm pack --dry-run

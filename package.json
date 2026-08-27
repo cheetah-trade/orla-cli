@@ -1,0 +1,49 @@
+{
+  "name": "orla",
+  "version": "0.1.0",
+  "description": "Your Orla books from the terminal, and a stdio MCP bridge for clients that cannot speak HTTP.",
+  "license": "MIT",
+  "author": "Digital Flow Pte. Ltd.",
+  "homepage": "https://orla.finance/en/ai-agents/api",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cheetah-trade/orla-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cheetah-trade/orla-cli/issues"
+  },
+  "keywords": [
+    "orla",
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "cli",
+    "finance",
+    "bookkeeping",
+    "accounting",
+    "ledger",
+    "crypto"
+  ],
+  "type": "module",
+  "bin": {
+    "orla": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

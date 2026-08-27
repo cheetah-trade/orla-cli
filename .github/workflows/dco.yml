@@ -1,0 +1,34 @@
+name: dco
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-off:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # One line per commit saying the author has the right to submit it under
+      # the MIT license. `git commit -s` writes it; this only checks it is there.
+      - name: Every commit carries Signed-off-by
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          missing=0
+          while read -r sha; do
+            if ! git log -1 --format='%B' "$sha" | grep -qi '^Signed-off-by: .\+ <.\+@.\+>'; then
+              echo "::error::$sha ($(git log -1 --format='%s' "$sha")) has no Signed-off-by line"
+              missing=1
+            fi
+          done < <(git rev-list "$BASE".."$HEAD")
+          if [ "$missing" -eq 1 ]; then
+            echo "Sign your commits with 'git commit -s', or amend with 'git commit --amend -s'."
+            exit 1
+          fi
+          echo "All commits signed off."

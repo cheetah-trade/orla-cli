@@ -1,0 +1,36 @@
+name: MCP client setup
+description: Orla will not connect from a client, or a client is missing from the setup notes.
+labels: ["mcp-client"]
+body:
+  - type: input
+    id: client
+    attributes:
+      label: Which client
+      placeholder: "Zed 0.180, Windsurf, a client of your own"
+    validations:
+      required: true
+  - type: dropdown
+    id: transport
+    attributes:
+      label: How you connected it
+      options:
+        - Remote, pointed at https://app.orla.finance/api/mcp
+        - stdio, through `npx orla mcp`
+        - Both, neither worked
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: The configuration you used
+      description: The client's MCP config block, with any tokens removed.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What the client showed
+      description: Its error text or log lines. `orla whoami` output helps if login itself worked.
+    validations:
+      required: true

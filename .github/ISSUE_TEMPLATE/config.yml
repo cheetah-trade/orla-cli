@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question about your Orla account, plan or books
+    url: mailto:support@orla.finance
+    about: Anything about the service rather than this client. It reaches people who can actually look.
+  - name: Suspected vulnerability
+    url: https://github.com/cheetah-trade/orla-cli/security/policy
+    about: Report privately. Please do not open a public issue.
+  - name: Setup notes per client
+    url: https://orla.finance/en/ai-agents
+    about: Claude, Cursor, VS Code, Zed and Windsurf, step by step.
