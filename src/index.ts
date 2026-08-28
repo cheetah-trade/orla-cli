@@ -23,6 +23,8 @@ import {
   whoami,
 } from "./commands.js";
 import { bridge, listTools } from "./mcp.js";
+import { need, optional, parse } from "./args.js";
+import type { Flags } from "./args.js";
 import { clear, load, save } from "./store.js";
 
 const USAGE = `orla — your Orla books from the terminal
@@ -43,8 +45,6 @@ const USAGE = `orla — your Orla books from the terminal
 Flags: --space <id> on anything space-scoped, --json for machine output.
 A personal connection reads and records. It cannot pay anyone.`;
 
-type Flags = Record<string, string | boolean>;
-
 /**
  * Read from the manifest rather than repeated in the source, because two
  * places to write a version number is one place to forget it. `npm publish`
@@ -54,40 +54,6 @@ function version(): string {
   const root = join(dirname(fileURLToPath(import.meta.url)), "..");
   const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { version?: string };
   return manifest.version ?? "unknown";
-}
-
-function parse(argv: string[]): { words: string[]; flags: Flags } {
-  const words: string[] = [];
-  const flags: Flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i] as string;
-    if (!arg.startsWith("--")) {
-      words.push(arg);
-      continue;
-    }
-    const name = arg.slice(2);
-    const next = argv[i + 1];
-    if (next === undefined || next.startsWith("--")) {
-      flags[name] = true;
-    } else {
-      flags[name] = next;
-      i += 1;
-    }
-  }
-  return { words, flags };
-}
-
-function need(flags: Flags, name: string): string {
-  const value = flags[name];
-  if (typeof value !== "string" || !value) {
-    throw new Error(`--${name} is required`);
-  }
-  return value;
-}
-
-function optional(flags: Flags, name: string): string | undefined {
-  const value = flags[name];
-  return typeof value === "string" ? value : undefined;
 }
 
 async function run(argv: string[]): Promise<void> {

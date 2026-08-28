@@ -19,6 +19,8 @@ jobs:
       - run: npm install
       - run: npm run check
       - run: npm run build
+      # node:test, no framework and no dependency to audit
+      - run: node --test test/*.test.js
       # The package ships `dist/` and nothing else. If the build stopped
       # emitting the entrypoint, `npx orla` installs a package with no binary
       # and the failure lands on somebody else's machine, not here.

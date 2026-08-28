@@ -42,8 +42,13 @@ no contributor agreement to sign and nothing to fax.
 ```bash
 npm install
 npm run check   # types, and this must be clean
-npm run build
+npm test        # builds, then runs node:test against dist/
 ```
+
+The tests use `node:test`, so there is no framework to install and nothing new
+for an audit to look at. They cover the argument grammar, the CSV your books
+come out as, and the stdio bridge spoken to as a client speaks to it. None of
+them touch the network.
 
 Then run the thing you changed against a real connection. `orla login --api`
 points at whichever deployment you are testing against.
