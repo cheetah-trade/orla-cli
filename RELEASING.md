@@ -14,7 +14,7 @@ entry. They are expected to agree, and CI refuses a tag that disagrees with
    npm publish --access public
    ```
 
-2. **Configure trusted publishing** on npmjs.com for the package `orla`:
+2. **Configure trusted publishing** on npmjs.com for the package `orla-cli`:
    repository `cheetah-trade/orla-cli`, workflow `release.yml`. After this no
    npm token exists anywhere, and every published version carries a provenance
    attestation tying it to a commit and a build.

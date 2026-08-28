@@ -4,12 +4,17 @@ Your [Orla](https://orla.finance) books from a terminal, and a stdio bridge for
 MCP clients that cannot speak HTTP.
 
 ```bash
-npx orla login
-npx orla tx list --from 2026-08-01
-npx orla export --from 2026-01-01 > books.csv
+npx orla-cli login
+npx orla-cli tx list --from 2026-08-01
+npx orla-cli export --from 2026-01-01 > books.csv
 ```
 
 No dependencies, no build step, no native module to compile. Node 22 or newer.
+
+The package is `orla-cli` and the command it installs is `orla`. They differ
+because npm refused the bare name as too close to packages that already exist
+(`ora`, `ol`, `rlp`, `url`), and renaming the command would have been the worse
+half of that trade: `npm i -g orla-cli` still gives you `orla tx list`.
 
 ## What it is
 
@@ -65,12 +70,12 @@ support of its own:
 ```json
 {
   "mcpServers": {
-    "orla": { "command": "npx", "args": ["-y", "orla", "mcp"] }
+    "orla": { "command": "npx", "args": ["-y", "orla-cli", "mcp"] }
   }
 }
 ```
 
-Run `orla login` once first. The bridge uses that session and refreshes it.
+Run `npx orla-cli login` once first. The bridge uses that session and refreshes it.
 
 Setup for individual clients is written up at
 [orla.finance/en/ai-agents](https://orla.finance/en/ai-agents).

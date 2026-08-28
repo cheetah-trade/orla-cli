@@ -13,7 +13,7 @@ know what belongs in it before you spend an evening.
 ## What does not
 
 - **New runtime dependencies.** The package has none, and that is a feature:
-  `npx orla` installs nothing, compiles nothing, and there is nothing here for
+  `npx orla-cli` installs nothing, compiles nothing, and there is nothing here for
   a supply chain attack to reach. A PR that adds a dependency needs to argue
   for it before it needs to pass review.
 - **The server.** Tools, permissions and everything about what a connection may

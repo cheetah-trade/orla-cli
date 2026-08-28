@@ -19,7 +19,7 @@
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
-      "identifier": "orla",
+      "identifier": "orla-cli",
       "version": "0.1.0",
       "runtimeHint": "npx",
       "transport": { "type": "stdio" },

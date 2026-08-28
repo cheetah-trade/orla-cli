@@ -1,5 +1,5 @@
 {
-  "name": "orla",
+  "name": "orla-cli",
   "version": "0.1.0",
   "description": "Your Orla books from the terminal, and a stdio MCP bridge for clients that cannot speak HTTP.",
   "license": "MIT",
