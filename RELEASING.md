@@ -35,31 +35,37 @@ the first time.
 
 ## The MCP registry entry
 
-`server.json` describes both ways in: the remote endpoint at
-`https://app.orla.finance/api/mcp` and the npm package for clients that only
-speak stdio. Publish it with the official
-[`mcp-publisher`](https://github.com/modelcontextprotocol/registry) after the
-npm version is live, and keep its `version` in step with `package.json`.
+The server is listed as **`finance.orla/orla`**, and the DNS TXT record on
+`orla.finance` is what proves the name is ours:
 
-The name decides the authentication, and this is the one open choice:
+```
+v=MCPv1; k=ed25519; p=<base64 public key>
+```
 
-- **`finance.orla/orla`** (what the file says) needs a DNS TXT record on
-  `orla.finance` proving the domain is ours:
+Publish with `scripts/publish-to-registry.py --apply`. It signs a timestamp with
+the private half of that key, exchanges it for a registry token and posts
+`server.json`. Run it without `--apply` first: that prints what would go.
 
-  ```
-  v=MCPv1; k=ed25519; p=<base64 public key>
-  ```
+The official `mcp-publisher` binary does the same two requests. We do not use it
+because a foreign binary running next to a private key has to clear the supply
+chain gate in the main repository first, and that costs more than the exchange
+it would perform. The protocol is short, and the script shows both requests
+whole.
 
-  then `mcp-publisher login dns --domain orla.finance --private-key <hex>`.
-  The keypair is generated for this purpose and belongs in the secrets
-  directory, not in this repository and not in CI.
+Keep `version` in step with `package.json`, and publish npm first: the registry
+fetches the published `package.json` and refuses a package entry unless it
+carries `"mcpName": "finance.orla/orla"`. The script asks npm about that itself
+and simply leaves the package out of the entry while the field is missing, so a
+release can be listed by its remote endpoint alone and gain the package later
+without anyone remembering to.
 
-- **`io.github.cheetah-trade/orla`** needs no DNS record at all:
-  `mcp-publisher login github` is a device-code prompt in a browser. It is a
-  one-line change to `server.json`.
+Two things it will refuse, neither of which is in the registry's documentation:
 
-The first reads as the company's, the second as a personal account's. That is
-the whole difference, and it is worth two minutes in the DNS panel.
+- a `description` longer than 100 characters
+- a package whose published `package.json` has no `mcpName`
+
+The keypair belongs in `~/.claude/.secrets/orla-mcp-registry.env` — not in this
+repository and not in CI.
 
 ## What is not released from here
 

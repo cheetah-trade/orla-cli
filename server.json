@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "finance.orla/orla",
   "title": "Orla",
-  "description": "Personal, family and business books over fiat and crypto. Read accounts and transactions, search them, export CSV and record a transaction. It cannot move money: payments belong to an agent connected for that purpose, with its own limits.",
+  "description": "Personal, family and business books over fiat and crypto. Reads and records; it cannot pay.",
   "version": "0.1.0",
   "websiteUrl": "https://orla.finance/en/ai-agents/api",
   "repository": {
@@ -22,9 +22,14 @@
       "identifier": "orla-cli",
       "version": "0.1.0",
       "runtimeHint": "npx",
-      "transport": { "type": "stdio" },
+      "transport": {
+        "type": "stdio"
+      },
       "packageArguments": [
-        { "type": "positional", "value": "mcp" }
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
       ]
     }
   ]
