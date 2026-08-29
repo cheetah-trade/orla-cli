@@ -3,7 +3,7 @@
   "name": "finance.orla/orla",
   "title": "Orla",
   "description": "Personal, family and business books over fiat and crypto. Reads and records; it cannot pay.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "websiteUrl": "https://orla.finance/en/ai-agents/api",
   "repository": {
     "url": "https://github.com/cheetah-trade/orla-cli",
@@ -20,7 +20,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "orla-cli",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
