@@ -77,8 +77,14 @@ support of its own:
 
 Run `npx orla-cli login` once first. The bridge uses that session and refreshes it.
 
+The server is listed in the official MCP registry as **`finance.orla/orla`**,
+which is the name a client or a directory should resolve it by. The entry
+carries both doors: the remote endpoint above and this package for stdio.
+
 Setup for individual clients is written up at
-[orla.finance/en/ai-agents](https://orla.finance/en/ai-agents).
+[orla.finance/en/mcp](https://orla.finance/en/mcp). That is the personal
+connection, which reads your books and cannot pay. `/en/ai-agents` is a
+different door, where an agent gets a budget and a card of its own.
 
 ## Where the token lives
 
