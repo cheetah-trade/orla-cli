@@ -15,7 +15,7 @@
 
 import { createInterface } from "node:readline";
 
-import { accessToken } from "./auth.js";
+import { accessToken, reach } from "./auth.js";
 
 export const PROTOCOL_VERSION = "2026-07-28";
 
@@ -23,7 +23,7 @@ export type Rpc = { jsonrpc: "2.0"; id?: unknown; method?: string; params?: unkn
 
 async function post(body: unknown, extraHeaders: Record<string, string> = {}): Promise<Rpc> {
   const { token, session } = await accessToken();
-  const res = await fetch(`${session.apiBase}/mcp`, {
+  const res = await reach(`${session.apiBase}/mcp`, {
     method: "POST",
     headers: {
       "content-type": "application/json",

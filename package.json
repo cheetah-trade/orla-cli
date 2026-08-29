@@ -1,6 +1,6 @@
 {
   "name": "orla-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Your Orla books from the terminal, and a stdio MCP bridge for clients that cannot speak HTTP.",
   "mcpName": "finance.orla/orla",
   "license": "MIT",

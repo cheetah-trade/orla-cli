@@ -102,8 +102,37 @@ function bind(port: number): Promise<Listener | null> {
   });
 }
 
+/**
+ * `fetch`, but a network failure says what it could not reach.
+ *
+ * Undici throws a bare `fetch failed` for DNS, TLS and refused connections
+ * alike, and that message reaches the user unchanged: `orla: fetch failed`.
+ * It names neither the host nor the remedy, and the commonest cause is a
+ * session stored against an Orla this machine can no longer reach, which the
+ * user has no way to guess.
+ */
+export async function reach(url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (err) {
+    const host = (() => {
+      try {
+        return new URL(url).host;
+      } catch {
+        return url;
+      }
+    })();
+    const why = err instanceof Error && err.cause instanceof Error ? err.cause.message : (err as Error)?.message;
+    throw new Error(
+      `cannot reach ${host}${why ? ` (${why})` : ""}. ` +
+        "If this machine is online, the stored session may point at an Orla that is gone: " +
+        "`orla logout` and `orla login` again.",
+    );
+  }
+}
+
 async function postForm(url: string, body: Record<string, string>): Promise<Record<string, string>> {
-  const res = await fetch(url, {
+  const res = await reach(url, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams(body).toString(),
