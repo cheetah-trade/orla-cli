@@ -27,7 +27,7 @@ import { need, optional, parse } from "./args.js";
 import type { Flags } from "./args.js";
 import { clear, load, save } from "./store.js";
 
-const USAGE = `orla — your Orla books from the terminal
+const USAGE = `orla: your Orla books from the terminal
 
   orla login [--api URL]        connect this machine (opens a browser)
   orla logout                   forget the stored session
