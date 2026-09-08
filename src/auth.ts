@@ -8,10 +8,14 @@
  * the same one Claude sends people to. So a token minted here obeys the same
  * grant, shows up in the same list and dies to the same revoke button.
  *
- * The redirect is loopback because that is where a terminal can listen, and the
- * ports are fixed because the server matches redirect_uri against the document
- * exactly. Three of them: one is enough until something else on the machine is
- * already holding it, which is exactly when a person is least able to debug it.
+ * The redirect is loopback because that is where a terminal can listen. The
+ * ports used to be a fixed list of three, because the server matched
+ * redirect_uri against the document as an exact string and a port it had never
+ * seen was refused. That was the server being wrong (RFC 8252 §7.3 requires ANY
+ * port to be allowed on a loopback redirect, which is why native clients bind
+ * whatever is free), and it was fixed on 2026-09-08. So this asks the operating
+ * system for a free port like every other native client, and the failure mode
+ * where three specific ports were all taken is gone.
  */
 
 import { createHash, randomBytes } from "node:crypto";
@@ -27,7 +31,10 @@ export const DEFAULT_API = "https://app.orla.finance/api";
 
 /** Published from the marketing site, and the only identity this client has. */
 export const CLIENT_ID = "https://orla.finance/mcp-cli.json";
-export const PORTS = [7654, 7655, 7656];
+//: Kept, and no longer the whole story: an older Orla refuses a port that is not
+//: on this list, so trying these first means a CLI updated before the server it
+//: talks to still works. Port 0 is the real answer and comes last.
+export const PORTS = [7654, 7655, 7656, 0];
 
 const SCOPE = "orla.read orla.write";
 
@@ -64,7 +71,9 @@ async function startListener(): Promise<Listener> {
     const listener = await bind(port);
     if (listener) return listener;
   }
-  throw new Error(`ports ${PORTS.join(", ")} are all busy; free one and run orla login again`);
+  // Only reachable if even port 0 could not bind, which is the machine refusing
+  // to give out a socket rather than anything about these numbers.
+  throw new Error("could not open a local port to finish signing in; check that nothing is blocking loopback sockets");
 }
 
 function bind(port: number): Promise<Listener | null> {
@@ -98,7 +107,14 @@ function bind(port: number): Promise<Listener | null> {
     });
     // Loopback only: binding 0.0.0.0 would put an authorization callback on the
     // local network for as long as the login takes.
-    server.listen(port, "127.0.0.1", () => resolve({ port, callback }));
+    server.listen(port, "127.0.0.1", () => {
+      // The port the OS actually gave, not the one asked for. With a fixed
+      // number the two are the same; with 0 they are not, and echoing the
+      // request back would put `127.0.0.1:0` in the redirect URI.
+      const bound = server.address();
+      const actual = typeof bound === "object" && bound ? bound.port : port;
+      resolve({ port: actual, callback });
+    });
   });
 }
 
