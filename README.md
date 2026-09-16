@@ -50,18 +50,28 @@ for by name.
 
 ## As an MCP server
 
-Orla's MCP server is remote and speaks Streamable HTTP:
+Orla's MCP server is remote and speaks Streamable HTTP, and it answers at two
+addresses:
 
 ```
-https://app.orla.finance/api/mcp
+https://app.orla.finance/api/mcp/personal   your own books, and nothing that pays
+https://app.orla.finance/api/mcp            the same door plus the agent shape
 ```
 
 A client that supports remote MCP needs nothing from this package. Point it at
-that URL and it will find the consent page by itself. Claude Code, for example:
+an address and it will find the consent page by itself. Claude Code, for
+example:
 
 ```bash
-claude mcp add --transport http orla https://app.orla.finance/api/mcp
+claude mcp add --transport http orla https://app.orla.finance/api/mcp/personal
 ```
+
+The difference is not a label. At `/mcp/personal` every tool that moves money is
+withheld from the list and refused if a model asks for one by name, so the
+promise holds whatever the consent page was told. At `/mcp` the page offers both
+shapes, and picking "connect an agent" mints a machine principal with a budget
+of its own. Use the personal address unless you are deliberately connecting a
+bot.
 
 Clients that only support stdio servers can run this CLI as one. It relays
 JSON-RPC to the HTTP endpoint and holds the token, so the client needs no OAuth
