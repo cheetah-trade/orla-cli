@@ -86,6 +86,41 @@ Setup for individual clients is written up at
 connection, which reads your books and cannot pay. `/en/ai-agents` is a
 different door, where an agent gets a budget and a card of its own.
 
+## As a Claude Code plugin
+
+This repository is also a plugin marketplace. Installing it brings four
+bookkeeping skills and the personal MCP connection they run on:
+
+```
+/plugin marketplace add cheetah-trade/orla-cli
+/plugin install orla@orla
+```
+
+The first tool call opens the ordinary consent page in a browser, where you pick
+the spaces this machine may reach. `/mcp` shows the connection and starts that
+flow by hand.
+
+| Skill | What it does |
+|---|---|
+| `orla-categorize` | Sorts uncategorized rows into categories, in batches you confirm first. |
+| `orla-month-close` | Closes a month: spend, budgets that broke, what is unsorted, what the space is worth, what waits for a signature. Reads only. |
+| `orla-settle-up` | Balances and the settle-up plan in a shared space, and records shared expenses from your own account of a trip. |
+| `orla-counterparty-check` | What a business space knows about a counterparty or address before money goes out. |
+
+The plugin points at `https://app.orla.finance/api/mcp/personal`, which is the
+door that holds no tool that moves money. The skills say so, and the address is
+what makes it true rather than a promise: payments, transfers and card details
+are withheld there and refused if asked for by name.
+
+Two things the skills lean on, worth knowing before you read them. A connection
+approved without "show full details" receives payees and addresses masked, which
+limits how much of a bank import can be categorized from four characters. And
+the tool list stops at 200 rows per call, with the true count beside it, so a
+busy month is read month by month rather than in one gulp.
+
+`contracts/mcp-personal-tools.json` is the committed shape of that door, and
+`test/skills.test.js` checks every tool and argument the skills name against it.
+
 ## Where the token lives
 
 The OS keychain: `security` on macOS, `secret-tool` on Linux. Where neither

@@ -67,6 +67,22 @@ Two things it will refuse, neither of which is in the registry's documentation:
 The keypair belongs in `~/.claude/.secrets/orla-mcp-registry.env` — not in this
 repository and not in CI.
 
+## The plugin half
+
+`.claude-plugin/` turns this repository into a plugin marketplace, and the
+skills in `skills/` ship from the same tag as the package. Two things keep that
+honest without anybody remembering them:
+
+- `npm version` runs `scripts/sync-plugin-version.mjs`, which carries the new
+  version into `.claude-plugin/plugin.json` and stages it, so the manifest lands
+  in the release commit rather than a release behind.
+- `test/skills.test.js` refuses a mismatch, and checks every tool and argument
+  the skills name against `contracts/mcp-personal-tools.json`.
+
+`contracts/mcp-personal-tools.json` is a copy of the door's committed shape from
+the backend repository. It is updated by copying that file, and the backend's own
+gate is what says the copy is due.
+
 ## What is not released from here
 
 The server. Tools, permissions and everything about what a connection may do
