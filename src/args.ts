@@ -7,6 +7,8 @@
  * the quiet case, `--from` swallowing the next flag as its value.
  */
 
+import { usage } from "./errors.js";
+
 export type Flags = Record<string, string | boolean>;
 
 export function parse(argv: string[]): { words: string[]; flags: Flags } {
@@ -33,7 +35,7 @@ export function parse(argv: string[]): { words: string[]; flags: Flags } {
 export function need(flags: Flags, name: string): string {
   const value = flags[name];
   if (typeof value !== "string" || !value) {
-    throw new Error(`--${name} is required`);
+    throw usage(`--${name} is required`);
   }
   return value;
 }
