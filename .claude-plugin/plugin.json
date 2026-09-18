@@ -1,7 +1,7 @@
 {
   "name": "orla",
   "description": "Bookkeeping skills over your own Orla books, on the personal MCP connection. No tool here moves money.",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "author": {
     "name": "Digital Flow Pte. Ltd."
   },
