@@ -36,7 +36,12 @@ Signing in needs a browser and a person:
 ```sh
 orla login              # opens the browser on Orla's consent page
 orla login --api URL    # another deployment; the session remembers which
+orla login --agent      # the other door, where a bot with a budget is minted
 ```
+
+Plain `orla login` asks for the personal door, the one where no tool that moves
+money exists. That is what makes the line above true of this client rather than
+true of whichever button somebody pressed on the consent page.
 
 **Stop and wait** for the person to finish in the browser. Do not guess a
 session, paste a token, or read one from a file. If the browser cannot open,
@@ -49,7 +54,7 @@ transactions`, no `orla tx remove`, no `orla space`.
 
 | Command | What it does | Flags |
 |---|---|---|
-| `orla login` | connect this machine (opens a browser) | `--api URL` |
+| `orla login` | connect this machine (opens a browser) | `--api URL`, `--agent` |
 | `orla logout` | forget the stored session | |
 | `orla whoami` | who this connection is, and what it reaches | |
 | `orla spaces` | the spaces in reach | |

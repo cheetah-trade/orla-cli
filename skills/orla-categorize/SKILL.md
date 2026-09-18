@@ -92,8 +92,9 @@ that run under review. Reporting "done" on a queued change is a lie the person
 finds out about later.
 
 A category from the wrong direction is refused by the server, not silently
-accepted: *"This category is for the other direction: pick an income category
-for income and a spending category for spending."* Show that refusal, fix the
+accepted. The refusal reads roughly *"This category is for the other direction:
+pick an income category for income and a spending category for spending"*, and
+the wording is the server's to change: show the sentence you were given, fix the
 pairing and retry the row, rather than swallowing it and reporting a smaller
 number with no explanation.
 
