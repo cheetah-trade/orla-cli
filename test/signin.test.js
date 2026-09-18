@@ -39,9 +39,11 @@ async function stubOrla() {
         res.end(JSON.stringify({ access_token: "at", refresh_token: "rt", expires_in: 3600 }));
         return;
       }
-      if (req.url === "/mcp") {
+      // Both doors, because which one the bridge posts to is part of what these
+      // tests are watching: a sign-in from here asks for the personal door.
+      if (req.url === "/mcp" || req.url === "/mcp/personal") {
         const rpc = JSON.parse(body);
-        seen.mcpCalls.push({ method: rpc.method, auth: req.headers.authorization });
+        seen.mcpCalls.push({ method: rpc.method, auth: req.headers.authorization, path: req.url });
         res.writeHead(200, { "content-type": "application/json" });
         res.end(JSON.stringify({ jsonrpc: "2.0", id: rpc.id, result: { tools: [{ name: "orla_whoami" }] } }));
         return;
@@ -150,6 +152,12 @@ test("when the person finishes in the browser, the client is told and the relay 
     const listed = await b.until((l) => l.id === 2);
     deepStrictEqual(listed.result, { tools: [{ name: "orla_whoami" }] });
     strictEqual(stub.seen.mcpCalls[0].auth, "Bearer at", "relayed with the token the sign-in minted");
+    strictEqual(stub.seen.mcpCalls[0].path, "/mcp/personal", "and relayed to the door that sign-in asked for");
+    strictEqual(
+      stub.seen.tokenGrants[0].resource,
+      `${stub.apiBase}/mcp/personal`,
+      "the code was exchanged for that same audience",
+    );
   } finally {
     b.kill();
     stub.close();

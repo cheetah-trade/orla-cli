@@ -30,11 +30,18 @@ its own limits, set in the app under Agents. The tools that move money are not
 in the list this connection is given, and are refused at the endpoint if asked
 for by name.
 
+That is not a matter of trust in this client: `orla login` asks for the personal
+address, where those tools do not exist, so the promise survives whatever gets
+ticked on the consent page. `orla login --agent` asks for the other address, the
+one where a bot with its own budget can be minted. A session remembers which
+door issued its tokens and keeps using it, so an existing connection is not
+re-pointed by an update.
+
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `orla login [--api URL]` | Connect this machine. Opens a browser. |
+| `orla login [--api URL] [--agent]` | Connect this machine. Opens a browser. `--agent` asks for the door where a bot can be minted. |
 | `orla logout` | Forget the stored session. |
 | `orla whoami` | Which connection this is and which spaces it reaches. |
 | `orla spaces` | The spaces in reach. |
@@ -133,8 +140,8 @@ support of its own:
 }
 ```
 
-The bridge uses the session `orla login` stored and refreshes it. With no
-session it signs in by itself, since a client that spawned it has no terminal
+The bridge uses the session `orla login` stored, refreshes it, and posts to the
+door that session was minted at. With no session it signs in by itself, since a client that spawned it has no terminal
 to type into: it opens the browser on the consent page, stays a well-formed
 server meanwhile (`initialize` and `ping` answered, `tools/list` empty, a tool
 call refused with `cli.sign_in_in_progress`), and tells the client
