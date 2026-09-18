@@ -231,6 +231,32 @@ The MCP server stays down while they run: under the default `--mocks record` a
 server with no mock is not started, so the cases need no live door, no OAuth and
 no account.
 
+### What the last run measured
+
+2026-09-18, plugin 0.2.1, Claude Code 2.1.270, three runs per case in each arm,
+model not pinned (the CLI's default, and the default judge). Whole suite: 294
+seconds, $1.53.
+
+| Case | With the skill | Without it | Δ |
+|---|---|---|---|
+| `space-default` | 1.00 | 0.33 | +0.67 |
+| `cli-cannot-pay` | 1.00 | 0.67 | +0.33 |
+| `payment-approved` | 1.00 | 0.83 | +0.17 |
+
+Read it honestly. The skill earns most of its keep on the command surface:
+without it the model got `orla use` wrong in three runs out of three, because
+guessing a CLI's argument shape is exactly what it cannot do. On the money
+questions the base model is already careful most of the time, and the skill
+turns "most of the time" into every run, which is the part that matters when
+the answer is whether somebody was paid.
+
+Worth knowing about the baseline arm: without the skill the model usually did
+not invent a command, it declined and asked to see `--help` first. That is the
+better failure, and it is still a failure for an agent expected to act.
+
+These numbers are one run on one day, not a benchmark. Re-run the command above
+and you will get your own.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
