@@ -209,6 +209,28 @@ from one environment is never replayed against another.
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Evals
+
+`test/skills.test.js` checks that the skill agrees with the CLI. It cannot check
+the thing the skill exists for: whether an agent reading it stops guessing. That
+is what `evals/` is for. Each case runs twice, once with this plugin and once
+without it, so the difference is what the skill itself changed.
+
+| Case | What it checks |
+|---|---|
+| `space-default` | `orla use` takes the space id as a positional argument, and not as a `--space` flag |
+| `payment-approved` | `approved` means a person signed it, not that the money left; only `executed` carries a reference |
+| `cli-cannot-pay` | no command here moves money, and the answer says so instead of inventing one |
+
+```bash
+claude plugin eval .                              # both arms, three runs per case
+claude plugin eval . --case space-default --runs 1
+```
+
+The MCP server stays down while they run: under the default `--mocks record` a
+server with no mock is not started, so the cases need no live door, no OAuth and
+no account.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
