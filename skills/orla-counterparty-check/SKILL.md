@@ -19,18 +19,30 @@ the decision itself.
 orla_risk_check(space_id, who: "<contact name or wallet address>")
 ```
 
-When the space is not a business space with counterparty monitoring, the answer
-is not an error. It is data that reads:
+**Read the key, not the sentence.** When this feature has nothing to say, the
+answer is not an error: it is ordinary data carrying an `unavailable` field that
+explains why.
 
 ```json
-{"unavailable": "Counterparty fraud monitoring exists for business spaces only."}
+{"unavailable": "Counterparty fraud monitoring is an add-on this space does not have. It is bought in Billing, Add-ons."}
 ```
 
-Say that, in those words, and stop. Do not fall back to a web search, a block
-explorer or your own judgement about an address and present the result as though
-Orla vouched for it. "I could not check this" is a useful answer. "Looks fine to
-me" about a wallet you looked up elsewhere is not, and it is the sentence
-somebody loses money to.
+The wording differs by cause, and there are at least six: the space is not a
+business space, the add-on is not bought, monitoring is not switched on for this
+space yet, the first sweep of its counterparties has not finished, no watched
+counterparty matches the name you passed, or that counterparty has no address on
+a watched chain. Matching on any one sentence is how a skill decides a real
+refusal is something else, so key off the field and repeat the sentence you were
+given rather than one you remember.
+
+One case is not a refusal at all: a trace can come back with `unavailable`
+**beside** its data, saying the provider failed and to ask again tomorrow. Report
+both halves; the hops that did arrive are still hops.
+
+Then stop. Do not fall back to a web search, a block explorer or your own
+judgement about an address and present the result as though Orla vouched for it.
+"I could not check this" is a useful answer. "Looks fine to me" about a wallet
+you looked up elsewhere is not, and it is the sentence somebody loses money to.
 
 ## The five reads
 

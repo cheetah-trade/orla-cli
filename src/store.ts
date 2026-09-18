@@ -37,6 +37,13 @@ export type Session = {
   expiresAt: number;
   /** What `orla` uses when a command names no space. */
   defaultSpaceId?: string;
+  /**
+   * Which door minted these tokens. Absent on a session made before the CLI
+   * asked for one, and such a session belongs to the agent door: that is where
+   * it was minted, and re-pointing it would be a token sent to an audience it
+   * was not issued for.
+   */
+  door?: "personal" | "agent";
 };
 
 function filePath(): string {
