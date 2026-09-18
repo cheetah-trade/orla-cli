@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "orla": {
+      "type": "http",
+      "url": "https://app.orla.finance/api/mcp/personal"
+    }
+  }
+}

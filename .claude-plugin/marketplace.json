@@ -1,0 +1,17 @@
+{
+  "name": "orla",
+  "owner": {
+    "name": "Digital Flow Pte. Ltd.",
+    "url": "https://orla.finance"
+  },
+  "metadata": {
+    "description": "Bookkeeping skills for agents, over a person's own Orla books"
+  },
+  "plugins": [
+    {
+      "name": "orla",
+      "source": "./",
+      "description": "Four skills for keeping books in Orla: sort uncategorized rows, close a month, settle up a shared space, and check a counterparty before paying. Ships the personal MCP connection they run on."
+    }
+  ]
+}

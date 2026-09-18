@@ -50,18 +50,28 @@ for by name.
 
 ## As an MCP server
 
-Orla's MCP server is remote and speaks Streamable HTTP:
+Orla's MCP server is remote and speaks Streamable HTTP, and it answers at two
+addresses:
 
 ```
-https://app.orla.finance/api/mcp
+https://app.orla.finance/api/mcp/personal   your own books, and nothing that pays
+https://app.orla.finance/api/mcp            the same door plus the agent shape
 ```
 
 A client that supports remote MCP needs nothing from this package. Point it at
-that URL and it will find the consent page by itself. Claude Code, for example:
+an address and it will find the consent page by itself. Claude Code, for
+example:
 
 ```bash
-claude mcp add --transport http orla https://app.orla.finance/api/mcp
+claude mcp add --transport http orla https://app.orla.finance/api/mcp/personal
 ```
+
+The difference is not a label. At `/mcp/personal` every tool that moves money is
+withheld from the list and refused if a model asks for one by name, so the
+promise holds whatever the consent page was told. At `/mcp` the page offers both
+shapes, and picking "connect an agent" mints a machine principal with a budget
+of its own. Use the personal address unless you are deliberately connecting a
+bot.
 
 Clients that only support stdio servers can run this CLI as one. It relays
 JSON-RPC to the HTTP endpoint and holds the token, so the client needs no OAuth
@@ -85,6 +95,41 @@ Setup for individual clients is written up at
 [orla.finance/en/mcp](https://orla.finance/en/mcp). That is the personal
 connection, which reads your books and cannot pay. `/en/ai-agents` is a
 different door, where an agent gets a budget and a card of its own.
+
+## As a Claude Code plugin
+
+This repository is also a plugin marketplace. Installing it brings four
+bookkeeping skills and the personal MCP connection they run on:
+
+```
+/plugin marketplace add cheetah-trade/orla-cli
+/plugin install orla@orla
+```
+
+The first tool call opens the ordinary consent page in a browser, where you pick
+the spaces this machine may reach. `/mcp` shows the connection and starts that
+flow by hand.
+
+| Skill | What it does |
+|---|---|
+| `orla-categorize` | Sorts uncategorized rows into categories, in batches you confirm first. |
+| `orla-month-close` | Closes a month: spend, budgets that broke, what is unsorted, what the space is worth, what waits for a signature. Reads only. |
+| `orla-settle-up` | Balances and the settle-up plan in a shared space, and records shared expenses from your own account of a trip. |
+| `orla-counterparty-check` | What a business space knows about a counterparty or address before money goes out. |
+
+The plugin points at `https://app.orla.finance/api/mcp/personal`, which is the
+door that holds no tool that moves money. The skills say so, and the address is
+what makes it true rather than a promise: payments, transfers and card details
+are withheld there and refused if asked for by name.
+
+Two things the skills lean on, worth knowing before you read them. A connection
+approved without "show full details" receives payees and addresses masked, which
+limits how much of a bank import can be categorized from four characters. And
+the tool list stops at 200 rows per call, with the true count beside it, so a
+busy month is read month by month rather than in one gulp.
+
+`contracts/mcp-personal-tools.json` is the committed shape of that door, and
+`test/skills.test.js` checks every tool and argument the skills name against it.
 
 ## Where the token lives
 
