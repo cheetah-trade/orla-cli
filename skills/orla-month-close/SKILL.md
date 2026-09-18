@@ -1,6 +1,6 @@
 ---
 name: orla-month-close
-description: Close a month in an Orla space: what was spent, what is still unsorted, which budgets broke, what the space is worth and what is waiting for a signature. Use when someone asks to close the month, wants a monthly or quarterly review of their books, asks where the money went, or asks whether they are on budget. Reads only, writes nothing.
+description: "Close a month in an Orla space: what was spent, what is still unsorted, which budgets broke, what the space is worth and what is waiting for a signature. Use when someone asks to close the month, wants a monthly or quarterly review of their books, asks where the money went, or asks whether they are on budget. Reads only, writes nothing."
 ---
 
 # Close the month

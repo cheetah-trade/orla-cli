@@ -137,7 +137,23 @@ test("every skill declares the name of its own folder", () => {
       continue;
     }
     const name = front[1].match(/^name:\s*(\S+)/m)?.[1];
-    const description = front[1].match(/^description:\s*(.+)$/m)?.[1];
+    const raw = front[1].match(/^description:\s*(.+)$/m)?.[1];
+    // The `skills` CLI (`npx skills add`) reads this block with a strict YAML
+    // parser and SKIPS the skill on any error, out loud on the terminal and
+    // silently for the person who asked their agent to install it. An unquoted
+    // value holding ": " is "a nested mapping in a compact mapping" to it, and
+    // 0.2.0 shipped two skills it could not see; Claude Code's own loader is
+    // more lenient, which is why the plugin looked fine. So the value is either
+    // a double-quoted string on one line, or plain in the sense YAML means: no
+    // ": ", no " #", no leading indicator character.
+    const quoted = raw?.startsWith('"') ? raw.match(/^"((?:[^"\\]|\\.)*)"\s*$/)?.[1] : undefined;
+    const description = raw?.startsWith('"') ? quoted : raw;
+    if (raw?.startsWith('"') && quoted === undefined) {
+      offences.push(`${skill.name}: description opens a quote and does not close it on the same line`);
+    }
+    if (raw && !raw.startsWith('"') && (/:\s|\s#/.test(raw) || /^[>|&*!\[\]{}'%@`]/.test(raw))) {
+      offences.push(`${skill.name}: description is not plain YAML (it holds ": " or " #", or starts with an indicator); double-quote it`);
+    }
     if (name !== skill.name) offences.push(`${skill.name}: frontmatter says name: ${name}`);
     // The listing a model chooses from carries name and description and nothing
     // else. A skill with a description that does not say WHEN to use it is a
