@@ -1,6 +1,6 @@
 ---
 name: orla
-description: Orla books from a terminal or over MCP with the orla CLI: read accounts and transactions, record an expense or an income, export CSV, and know exactly where paying stops. Use when the user mentions Orla, their books or bookkeeping, an expense to record, a space or account in Orla, wants to script the books from a shell, or wants an agent to pay for something. Covers the exact command names, the JSON envelope and exit codes, signing in, and the payment states an agent may report.
+description: "Orla books from a terminal or over MCP with the orla CLI: read accounts and transactions, record an expense or an income, export CSV, and know exactly where paying stops. Use when the user mentions Orla, their books or bookkeeping, an expense to record, a space or account in Orla, wants to script the books from a shell, or wants an agent to pay for something. Covers the exact command names, the JSON envelope and exit codes, signing in, and the payment states an agent may report."
 ---
 
 # Orla
