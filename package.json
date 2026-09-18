@@ -42,7 +42,7 @@
     "build": "tsc -p tsconfig.json",
     "check": "tsc --noEmit -p tsconfig.json",
     "prepublishOnly": "npm run build",
-    "version": "node scripts/sync-plugin-version.mjs && git add .claude-plugin/plugin.json",
+    "version": "node scripts/sync-plugin-version.mjs && git add .claude-plugin/plugin.json server.json",
     "test": "npm run build && node --test test/*.test.js",
     "mcpb": "npm run build && node scripts/build-mcpb.mjs"
   },

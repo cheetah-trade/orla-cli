@@ -212,6 +212,25 @@ test("the plugin connects to Orla's own personal door and nowhere else", () => {
   }
 });
 
+test("the MCP registry entry carries the version that is being released", () => {
+  // Three files name a version here: the package, the plugin manifest and the
+  // registry entry. The first two are kept in step by `npm version` and the
+  // test above; the registry entry was not, and it sat two releases behind
+  // (0.1.2 against a published 0.2.1) without anything going red. The registry
+  // refuses an entry whose package version is not the published one, so the
+  // drift surfaces as a failed publish at the worst moment.
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
+  const entry = JSON.parse(readFileSync(join(ROOT, "server.json"), "utf8"));
+  const versions = [entry.version, ...(entry.packages ?? []).map((p) => p.version)];
+  const wrong = versions.filter((v) => v !== pkg.version);
+  if (wrong.length) {
+    throw new Error(
+      `server.json says ${versions.join(", ")} and package.json says ${pkg.version}. ` +
+        "The registry entry ships with the release, so it carries the release's version.",
+    );
+  }
+});
+
 test("the marketplace points at a plugin that is actually here", () => {
   const market = JSON.parse(readFileSync(join(ROOT, ".claude-plugin", "marketplace.json"), "utf8"));
   const plugin = JSON.parse(readFileSync(join(ROOT, ".claude-plugin", "plugin.json"), "utf8"));
