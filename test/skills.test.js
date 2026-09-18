@@ -36,6 +36,12 @@ const TOOLS = new Map(contract.tools.map((t) => [t.name, new Set(t.arguments)]))
  */
 const ABSENT_ON_PURPOSE = new Map([
   ["orla_risk_resolve", "a verdict silences a detector for half a year; it belongs to a person, in Orla"],
+  // The `orla` skill names the agent door's paying tools to say, in so many
+  // words, that a personal connection does not have them. If the personal door
+  // ever gained one, that sentence would be the first thing to become false.
+  ["orla_propose_payment", "a payment proposal is the agent door's; a personal connection cannot pay anyone"],
+  ["orla_wallet_transfer", "an agent's own wallet; a personal connection has no float to send from"],
+  ["orla_pay_for_resource", "x402 from an agent's wallet; a personal connection has no wallet"],
 ]);
 
 function skillFiles() {

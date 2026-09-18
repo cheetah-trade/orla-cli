@@ -10,7 +10,9 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: read
+  # `write`, not `read`: the release carries the Claude Desktop bundle, and
+  # creating a release with an asset is a write to this repository's contents.
+  contents: write
   id-token: write
 
 jobs:
@@ -39,3 +41,11 @@ jobs:
             exit 1
           fi
       - run: npm publish --access public
+      # The Claude Desktop bundle: a zip of dist/ and a manifest built from the
+      # same package.json, attached to a release on the tag. No packer is
+      # installed for it; `zip` and `gh` are on the runner already.
+      - run: node scripts/build-mcpb.mjs
+      - name: Release with the bundle attached
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" orla-*.mcpb --title "$GITHUB_REF_NAME" --generate-notes

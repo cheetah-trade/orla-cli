@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * `orla` — the terminal door into the same MCP surface Claude uses.
+ * `orla`: the terminal door into the same MCP surface Claude uses.
  *
  * Argument parsing is by hand and stays that way: a dependency-free CLI is one
  * `npx orla` with nothing to install and nothing to audit, and the grammar here
- * is five commands with flags.
+ * is a dozen commands with flags.
  */
 
 import { readFileSync } from "node:fs";
@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import { DEFAULT_API, login } from "./auth.js";
 import {
   accounts,
+  printFailure,
   printJson,
   resolveSpace,
   spaces,
@@ -22,28 +23,12 @@ import {
   txList,
   whoami,
 } from "./commands.js";
+import { describe, notConnected, usage } from "./errors.js";
 import { bridge, listTools } from "./mcp.js";
 import { need, optional, parse } from "./args.js";
 import type { Flags } from "./args.js";
 import { clear, load, save } from "./store.js";
-
-const USAGE = `orla: your Orla books from the terminal
-
-  orla login [--api URL]        connect this machine (opens a browser)
-  orla logout                   forget the stored session
-  orla whoami                   who this connection is, and what it reaches
-  orla spaces                   the spaces in reach
-  orla use <space-id>           remember a space as the default
-  orla accounts                 accounts in the space
-  orla tx list                  transactions (--from --to --search --account --limit)
-  orla tx add                   record one (--account --kind --amount --date [--payee --note])
-  orla export                   the same rows as CSV on stdout
-  orla tools                    which tools this connection is given
-  orla mcp                      stdio bridge, for clients that cannot speak HTTP
-  orla version                  which version this is
-
-Flags: --space <id> on anything space-scoped, --json for machine output.
-A personal connection reads and records. It cannot pay anyone.`;
+import { COMMANDS, USAGE } from "./usage.js";
 
 /**
  * Read from the manifest rather than repeated in the source, because two
@@ -62,11 +47,13 @@ async function run(argv: string[]): Promise<void> {
   const json = flags["json"] === true;
 
   if (command === "version" || flags["version"] === true) {
+    if (json) return printJson({ version: version() });
     process.stdout.write(`${version()}\n`);
     return;
   }
 
   if (!command || command === "help" || flags["help"] === true) {
+    if (json) return printJson({ commands: COMMANDS });
     process.stdout.write(`${USAGE}\n`);
     return;
   }
@@ -74,18 +61,20 @@ async function run(argv: string[]): Promise<void> {
   if (command === "login") {
     const session = await login(optional(flags, "api") ?? DEFAULT_API);
     process.stderr.write(`connected to ${session.apiBase}\n`);
+    if (json) return printJson({ api: session.apiBase, connection: await whoami() });
     await whoamiSummary();
     return;
   }
 
   if (command === "logout") {
     clear();
+    if (json) return printJson({ forgotten: true });
     process.stderr.write("session forgotten\n");
     return;
   }
 
   if (command === "mcp") {
-    await bridge();
+    await bridge(optional(flags, "api") ?? DEFAULT_API);
     return;
   }
 
@@ -103,10 +92,11 @@ async function run(argv: string[]): Promise<void> {
 
   if (command === "use") {
     const spaceId = words[1];
-    if (!spaceId) throw new Error("orla use <space-id>");
+    if (!spaceId) throw usage("orla use <space-id>");
     const session = load();
-    if (!session) throw new Error("not connected: run `orla login` first");
+    if (!session) throw notConnected();
     save({ ...session, defaultSpaceId: spaceId });
+    if (json) return printJson({ default_space_id: spaceId });
     process.stderr.write(`default space is now ${spaceId}\n`);
     return;
   }
@@ -118,6 +108,10 @@ async function run(argv: string[]): Promise<void> {
     return;
   }
 
+  if (!["accounts", "export", "tx"].includes(command)) {
+    throw usage(`unknown command: ${command}\n\n${USAGE}`);
+  }
+
   const spaceId = await resolveSpace(optional(flags, "space"));
 
   if (command === "accounts") {
@@ -126,35 +120,31 @@ async function run(argv: string[]): Promise<void> {
   }
 
   if (command === "export") {
-    await txExport(filterFrom(spaceId, flags, 500));
+    await txExport(filterFrom(spaceId, flags, 500), json);
     return;
   }
 
-  if (command === "tx") {
-    const sub = words[1] ?? "list";
-    if (sub === "list") {
-      await txList(filterFrom(spaceId, flags, 50), json);
-      return;
-    }
-    if (sub === "add") {
-      await txAdd(
-        spaceId,
-        {
-          account: need(flags, "account"),
-          kind: optional(flags, "kind") ?? "expense",
-          amount: need(flags, "amount"),
-          date: optional(flags, "date") ?? new Date().toISOString().slice(0, 10),
-          payee: optional(flags, "payee"),
-          note: optional(flags, "note"),
-        },
-        json,
-      );
-      return;
-    }
-    throw new Error(`unknown: orla tx ${sub}`);
+  const sub = words[1] ?? "list";
+  if (sub === "list") {
+    await txList(filterFrom(spaceId, flags, 50), json);
+    return;
   }
-
-  throw new Error(`unknown command: ${command}\n\n${USAGE}`);
+  if (sub === "add") {
+    await txAdd(
+      spaceId,
+      {
+        account: need(flags, "account"),
+        kind: optional(flags, "kind") ?? "expense",
+        amount: need(flags, "amount"),
+        date: optional(flags, "date") ?? new Date().toISOString().slice(0, 10),
+        payee: optional(flags, "payee"),
+        note: optional(flags, "note"),
+      },
+      json,
+    );
+    return;
+  }
+  throw usage(`unknown: orla tx ${sub}`);
 }
 
 function filterFrom(spaceId: string, flags: Flags, fallbackLimit: number) {
@@ -180,7 +170,15 @@ async function whoamiSummary(): Promise<void> {
   }
 }
 
-run(process.argv.slice(2)).catch((err: Error) => {
-  process.stderr.write(`orla: ${err.message}\n`);
-  process.exitCode = 1;
+const argv = process.argv.slice(2);
+run(argv).catch((err: unknown) => {
+  // The failure goes where the answer would have gone: with --json it is the
+  // envelope on stdout, so a program reads one stream and one shape; without
+  // it, a line on stderr. The exit status says which kind of failure either way.
+  if (parse(argv).flags["json"] === true) {
+    printFailure(err);
+  } else {
+    process.stderr.write(`orla: ${describe(err).message}\n`);
+  }
+  process.exitCode = describe(err).exit;
 });

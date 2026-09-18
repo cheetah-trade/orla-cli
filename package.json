@@ -29,7 +29,8 @@
     "orla": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "engines": {
     "node": ">=22"
@@ -42,7 +43,8 @@
     "check": "tsc --noEmit -p tsconfig.json",
     "prepublishOnly": "npm run build",
     "version": "node scripts/sync-plugin-version.mjs && git add .claude-plugin/plugin.json",
-    "test": "npm run build && node --test test/*.test.js"
+    "test": "npm run build && node --test test/*.test.js",
+    "mcpb": "npm run build && node scripts/build-mcpb.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

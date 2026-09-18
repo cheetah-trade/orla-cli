@@ -23,6 +23,7 @@ import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { platform } from "node:os";
 
+import { cancelled, notConnected, refused, sessionExpired, unreachable } from "./errors.js";
 import { load, save, type Session } from "./store.js";
 
 //: The API's own origin, behind the `/api` ingress prefix — not the app's.
@@ -73,7 +74,7 @@ async function startListener(): Promise<Listener> {
   }
   // Only reachable if even port 0 could not bind, which is the machine refusing
   // to give out a socket rather than anything about these numbers.
-  throw new Error("could not open a local port to finish signing in; check that nothing is blocking loopback sockets");
+  throw cancelled("could not open a local port to finish signing in; check that nothing is blocking loopback sockets");
 }
 
 function bind(port: number): Promise<Listener | null> {
@@ -139,7 +140,7 @@ export async function reach(url: string, init: RequestInit): Promise<Response> {
       }
     })();
     const why = err instanceof Error && err.cause instanceof Error ? err.cause.message : (err as Error)?.message;
-    throw new Error(
+    throw unreachable(
       `cannot reach ${host}${why ? ` (${why})` : ""}. ` +
         "If this machine is online, the stored session may point at an Orla that is gone: " +
         "`orla logout` and `orla login` again.",
@@ -155,7 +156,12 @@ async function postForm(url: string, body: Record<string, string>): Promise<Reco
   });
   const json = (await res.json()) as Record<string, string>;
   if (!res.ok) {
-    throw new Error(json["error_description"] || json["error"] || `token endpoint said ${res.status}`);
+    const why = json["error_description"] || json["error"] || `token endpoint said ${res.status}`;
+    // `invalid_grant` is the token endpoint saying the refresh token is dead:
+    // revoked in the app, rotated away, or minted by an Orla that is gone. That
+    // is "not connected" from here on, not a refusal of one command.
+    if (json["error"] === "invalid_grant") throw sessionExpired(why);
+    throw refused(json["error"] || "oauth.token", why, json);
   }
   return json;
 }
@@ -186,10 +192,10 @@ export async function login(apiBase: string): Promise<Session> {
 
   const params = await listener.callback;
   if (params.get("state") !== state) {
-    throw new Error("the callback carried a different state; nothing was connected");
+    throw cancelled("the callback carried a different state; nothing was connected");
   }
   const code = params.get("code");
-  if (!code) throw new Error(params.get("error") ?? "no code came back");
+  if (!code) throw cancelled(params.get("error_description") ?? params.get("error") ?? "no code came back");
 
   const tokens = await postForm(`${apiBase}/oauth/token`, {
     grant_type: "authorization_code",
@@ -212,9 +218,7 @@ export async function login(apiBase: string): Promise<Session> {
 /** A live access token, refreshed if the stored one is about to expire. */
 export async function accessToken(): Promise<{ token: string; session: Session }> {
   const session = load();
-  if (!session) {
-    throw new Error("not connected: run `orla login` first");
-  }
+  if (!session) throw notConnected();
   if (session.expiresAt - 60_000 > Date.now()) {
     return { token: session.accessToken, session };
   }

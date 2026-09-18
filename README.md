@@ -44,9 +44,57 @@ for by name.
 | `orla tx add` | Record one. `--account --kind --amount --date [--payee --note]`. |
 | `orla export` | The same rows as CSV on stdout. |
 | `orla tools` | Which tools this connection was given. |
-| `orla mcp` | stdio bridge (below). |
+| `orla mcp [--api URL]` | stdio bridge (below). |
+| `orla version` | Which version this is. |
 
 `--space <id>` on anything space-scoped, `--json` for machine-readable output.
+
+## For a program, or an agent
+
+With `--json`, every command answers with one envelope on stdout:
+
+```json
+{ "ok": true, "data": ... }
+{ "ok": false, "error": { "code": "cli.not_connected", "message": "not connected: run `orla login` first" } }
+```
+
+Read `ok`, then branch on `error.code`. Codes that begin `cli.` are the CLI's
+own; any other code is Orla's, passed through unchanged, the same name the
+REST API and the MCP endpoint use. The exit status says which kind of failure
+it was, so a shell script can branch without parsing anything:
+
+| Exit | Meaning |
+|---|---|
+| 0 | done |
+| 1 | a failure none of the rows below describes |
+| 2 | the command line: unknown command, missing flag |
+| 3 | no session here, or one Orla no longer honours |
+| 4 | a space-scoped command with no space to work in, or several |
+| 5 | Orla could not be reached |
+| 6 | Orla was reached and said no, or answered in a shape the CLI cannot read |
+| 7 | signing in was abandoned or came back wrong |
+
+The skill that teaches an agent all of this, including where paying stops, is
+`skills/orla/SKILL.md`. It ships in the package and at
+[orla.finance/skill.md](https://orla.finance/skill.md), and it is one of the
+five skills the Claude Code plugin below installs. Into any other agent:
+
+```bash
+npx skills add cheetah-trade/orla-cli --skill orla   # any agent the skills CLI knows
+curl -fsSL https://orla.finance/skill.md             # or just read it
+```
+
+For **Claude Desktop** there is a bundle, `orla-<version>.mcpb`, attached to
+each release: double-click it to install. It runs the stdio bridge below, and
+the bridge signs in by itself.
+
+Environment variables the CLI reads:
+
+| Variable | Effect |
+|---|---|
+| `ORLA_NO_BROWSER=1` | never launch a browser; the sign-in URL is printed on stderr instead |
+| `ORLA_NO_KEYCHAIN=1` | keep the session in a `0600` file instead of the OS keychain (tests, CI, headless boxes) |
+| `XDG_CONFIG_HOME` | where that file lives (`<dir>/orla/session.json`) |
 
 ## As an MCP server
 
@@ -85,7 +133,12 @@ support of its own:
 }
 ```
 
-Run `npx orla-cli login` once first. The bridge uses that session and refreshes it.
+The bridge uses the session `orla login` stored and refreshes it. With no
+session it signs in by itself, since a client that spawned it has no terminal
+to type into: it opens the browser on the consent page, stays a well-formed
+server meanwhile (`initialize` and `ping` answered, `tools/list` empty, a tool
+call refused with `cli.sign_in_in_progress`), and tells the client
+`tools/list_changed` when the person is done.
 
 The server is listed in the official MCP registry as **`finance.orla/orla`**,
 which is the name a client or a directory should resolve it by. The entry
@@ -98,8 +151,9 @@ different door, where an agent gets a budget and a card of its own.
 
 ## As a Claude Code plugin
 
-This repository is also a plugin marketplace. Installing it brings four
-bookkeeping skills and the personal MCP connection they run on:
+This repository is also a plugin marketplace. Installing it brings five
+skills, four for keeping the books and one for the CLI itself, and the personal
+MCP connection they run on:
 
 ```
 /plugin marketplace add cheetah-trade/orla-cli
@@ -116,6 +170,7 @@ flow by hand.
 | `orla-month-close` | Closes a month: spend, budgets that broke, what is unsorted, what the space is worth, what waits for a signature. Reads only. |
 | `orla-settle-up` | Balances and the settle-up plan in a shared space, and records shared expenses from your own account of a trip. |
 | `orla-counterparty-check` | What a business space knows about a counterparty or address before money goes out. |
+| `orla` | The CLI from a terminal: the exact commands, the JSON envelope and exit codes, and where paying stops. |
 
 The plugin points at `https://app.orla.finance/api/mcp/personal`, which is the
 door that holds no tool that moves money. The skills say so, and the address is

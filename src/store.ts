@@ -20,6 +20,14 @@ import { dirname, join } from "node:path";
 const SERVICE = "orla-cli";
 const ACCOUNT = "default";
 
+/**
+ * `ORLA_NO_KEYCHAIN=1` skips the keychain and uses the file. For a test that
+ * must not read the developer's real session, and for a CI box where
+ * `security` would prompt or hang; the file path can then be pointed anywhere
+ * with `XDG_CONFIG_HOME`.
+ */
+const useKeychain = (): boolean => !process.env["ORLA_NO_KEYCHAIN"];
+
 export type Session = {
   /** Where this session was minted. Stored so a token from staging cannot be replayed against production by a changed flag. */
   apiBase: string;
@@ -38,6 +46,7 @@ function filePath(): string {
 }
 
 function keychainRead(): string | null {
+  if (!useKeychain()) return null;
   try {
     if (platform() === "darwin") {
       return execFileSync("security", ["find-generic-password", "-s", SERVICE, "-a", ACCOUNT, "-w"], {
@@ -59,6 +68,7 @@ function keychainRead(): string | null {
 }
 
 function keychainWrite(value: string): boolean {
+  if (!useKeychain()) return false;
   try {
     if (platform() === "darwin") {
       execFileSync("security", ["add-generic-password", "-U", "-s", SERVICE, "-a", ACCOUNT, "-w", value], {
@@ -80,6 +90,7 @@ function keychainWrite(value: string): boolean {
 }
 
 function keychainClear(): void {
+  if (!useKeychain()) return;
   try {
     if (platform() === "darwin") {
       execFileSync("security", ["delete-generic-password", "-s", SERVICE, "-a", ACCOUNT], { stdio: "ignore" });

@@ -8,13 +8,26 @@
 
 import { randomUUID } from "node:crypto";
 
+import { describe, noSpaces, spaceRequired } from "./errors.js";
 import { callTool } from "./mcp.js";
 import { load, save } from "./store.js";
 
 type Row = Record<string, unknown>;
 
-export function printJson(value: unknown): void {
-  process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+/**
+ * `--json` output is one envelope for every command: `{ok:true,data}` on
+ * success and `{ok:false,error:{code,message}}` on failure, both on stdout.
+ * A program reads `ok`, then branches on `error.code`; it never has to guess
+ * from the shape of the data whether the call worked.
+ */
+export function printJson(data: unknown): void {
+  process.stdout.write(`${JSON.stringify({ ok: true, data }, null, 2)}\n`);
+}
+
+export function printFailure(err: unknown): void {
+  const { code, message, details } = describe(err);
+  const error = details === undefined ? { code, message } : { code, message, details };
+  process.stdout.write(`${JSON.stringify({ ok: false, error }, null, 2)}\n`);
 }
 
 /** A table narrow enough for a terminal, with the columns named up front. */
@@ -62,11 +75,8 @@ export async function resolveSpace(flag?: string): Promise<string> {
     if (session) save({ ...session, defaultSpaceId: spaces[0].id });
     return spaces[0].id;
   }
-  if (spaces.length === 0) {
-    throw new Error("this connection reaches no spaces; re-run `orla login` and tick one");
-  }
-  const names = spaces.map((s) => `  ${s.id}  ${s.name}`).join("\n");
-  throw new Error(`several spaces are in reach, name one with --space:\n${names}`);
+  if (spaces.length === 0) throw noSpaces();
+  throw spaceRequired(spaces);
 }
 
 export async function accounts(spaceId: string, json: boolean): Promise<void> {
@@ -117,7 +127,7 @@ export async function txList(filter: TxFilter, json: boolean): Promise<void> {
  * wire and useless in a spreadsheet: the file is going to somebody's
  * accountant, and "8c9767bd" is not an answer to "which card was this".
  */
-export async function txExport(filter: TxFilter): Promise<void> {
+export async function txExport(filter: TxFilter, json = false): Promise<void> {
   const [rows, accountNames, categoryNames] = await Promise.all([
     fetchTransactions(filter),
     namesOf("orla_list_accounts", "accounts", filter.spaceId),
@@ -128,6 +138,7 @@ export async function txExport(filter: TxFilter): Promise<void> {
     account: accountNames.get(String(row["account_id"] ?? "")) ?? row["account_id"],
     category: categoryNames.get(String(row["category_id"] ?? "")) ?? "",
   }));
+  if (json) return printJson(named);
   process.stdout.write(
     `${toCsv(named, ["occurred_on", "kind", "signed_amount", "currency", "payee", "note", "category", "account"])}\n`,
   );

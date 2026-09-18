@@ -28,3 +28,6 @@ jobs:
       # What `npm publish` would actually upload. A stray file in `files:` is
       # cheaper to catch here than to unpublish.
       - run: npm pack --dry-run
+      # The Claude Desktop bundle builds here too: the release workflow must
+      # not be the first place `zip` meets the manifest.
+      - run: node scripts/build-mcpb.mjs
