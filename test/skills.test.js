@@ -190,6 +190,28 @@ test("the plugin and the package carry the same version", () => {
   }
 });
 
+/**
+ * Every published address for this server, in one place.
+ *
+ * Three files tell somebody where Orla answers: the plugin's `.mcp.json`, the
+ * registry entry a directory resolves, and the readme. Two of them said
+ * different things: the plugin pointed at the personal door while the registry
+ * entry handed out `/api/mcp`, the address whose consent page can mint an agent
+ * with a budget, under a description that reads "it cannot pay".
+ */
+const PERSONAL_DOOR = "https://app.orla.finance/api/mcp/personal";
+
+test("the registry entry sends people to the door its own description promises", () => {
+  const entry = JSON.parse(readFileSync(join(ROOT, "server.json"), "utf8"));
+  const remotes = (entry.remotes ?? []).map((r) => r.url);
+  if (remotes.length !== 1 || remotes[0] !== PERSONAL_DOOR) {
+    throw new Error(
+      `server.json offers ${remotes.join(", ") || "no remote"}; it is the address a directory hands to a person, ` +
+        `and the entry says this server cannot pay, so it is ${PERSONAL_DOOR}.`,
+    );
+  }
+});
+
 test("the plugin connects to Orla's own personal door and nowhere else", () => {
   // Installing this plugin is an invitation to connect a financial account, and
   // the address in the manifest is what the browser lands on. A pull request
@@ -204,7 +226,7 @@ test("the plugin connects to Orla's own personal door and nowhere else", () => {
   if (servers.length !== 1) throw new Error(`.mcp.json declares ${servers.length} servers, expected one`);
   const [name, server] = servers[0];
   if (name !== "orla") throw new Error(`the server is named ${name}`);
-  if (server.url !== "https://app.orla.finance/api/mcp/personal") {
+  if (server.url !== PERSONAL_DOOR) {
     throw new Error(`.mcp.json points at ${server.url}`);
   }
   if (server.command || server.args) {
