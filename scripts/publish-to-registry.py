@@ -33,6 +33,21 @@ from datetime import datetime, timezone
 
 REGISTRY = "https://registry.modelcontextprotocol.io"
 DOMAIN = "orla.finance"
+
+#: Как доказывается домен. Реестр умеет два способа, и оба проверяют подпись
+#: открытым ключом, который он сам забирает с домена: `/v0/auth/dns` читает
+#: TXT-запись, `/v0/auth/http` читает `https://<домен>/.well-known/mcp-registry-auth`.
+#:
+#: Мы на файловом. TXT-запись на orla.finance стоит с 28.08.2026 и проверяет
+#: ключ, приватная половина которого жила в `~/.claude/.secrets` и не пережила
+#: смену машины; переписать запись нечем, потому что DNS домена на GoDaddy, чей
+#: API отвечает 401. Файл кладётся деплоем сайта и меняется тем же PR, что и
+#: остальной сайт, поэтому он ещё и честнее: ключ виден в истории репозитория.
+#:
+#: Старая TXT-запись остаётся мёртвой до тех пор, пока не появится доступ к DNS.
+#: Пока она там, `/v0/auth/dns` отвечает 401 со словами «published record may be
+#: stale», и это ровно то, что произошло 19.09.2026 при первой попытке.
+AUTH_PATH = "/v0/auth/http"
 SECRETS = pathlib.Path.home() / ".claude" / ".secrets" / "orla-mcp-registry.env"
 SERVER_JSON = pathlib.Path(__file__).resolve().parents[1] / "server.json"
 
@@ -102,8 +117,8 @@ def main() -> None:
         print("\nэто показ. Повторите с --apply.")
         return
 
-    # Подписывается сама строка времени: реестр проверяет её и по TXT-записи
-    # домена находит открытый ключ. Окно у подписи узкое, поэтому берём время
+    # Подписывается сама строка времени: реестр проверяет её открытым ключом,
+    # который берёт с домена. Окно у подписи узкое, поэтому берём время
     # непосредственно перед запросом.
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
@@ -113,7 +128,7 @@ def main() -> None:
 
     token = call(
         "POST",
-        "/v0/auth/dns",
+        AUTH_PATH,
         {"domain": DOMAIN, "timestamp": timestamp, "signed_timestamp": signature},
     ).get("registry_token")
     if not token:

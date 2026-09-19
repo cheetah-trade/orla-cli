@@ -35,12 +35,20 @@ the first time.
 
 ## The MCP registry entry
 
-The server is listed as **`finance.orla/orla`**, and the DNS TXT record on
-`orla.finance` is what proves the name is ours:
+The server is listed as **`finance.orla/orla`**, and a file on `orla.finance`
+is what proves the name is ours: `https://orla.finance/.well-known/mcp-registry-auth`,
+served from `marketing/public/` in the main repository.
 
 ```
 v=MCPv1; k=ed25519; p=<base64 public key>
 ```
+
+There is a DNS TXT record in the same shape, from 28.08.2026, and it is dead: the
+private half of the key it names did not survive a change of machine, and the
+domain's DNS is somewhere we currently have no key for. The registry reads the
+file instead (`AUTH_PATH` in the script). Remove the TXT record when access to
+DNS comes back; while it stands, `/v0/auth/dns` answers 401 and says the record
+may be stale.
 
 Publish with `scripts/publish-to-registry.py --apply`. It signs a timestamp with
 the private half of that key, exchanges it for a registry token and posts
