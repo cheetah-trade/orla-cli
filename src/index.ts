@@ -60,8 +60,10 @@ async function run(argv: string[]): Promise<void> {
   }
 
   if (command === "login") {
-    const session = await login(optional(flags, "api") ?? DEFAULT_API);
-    process.stderr.write(`connected to ${session.apiBase}\n`);
+    // The personal door by default: it is the one that holds no tool that moves
+    // money, and it is what this client says about itself in its readme.
+    const session = await login(optional(flags, "api") ?? DEFAULT_API, flags["agent"] === true ? "agent" : "personal");
+    process.stderr.write(`connected to ${session.apiBase}${session.door === "agent" ? " (agent door)" : " (your own books)"}\n`);
     if (json) return printJson({ api: session.apiBase, connection: await whoami() });
     await whoamiSummary();
     return;

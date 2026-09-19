@@ -74,10 +74,15 @@ skills in `skills/` ship from the same tag as the package. Two things keep that
 honest without anybody remembering them:
 
 - `npm version` runs `scripts/sync-plugin-version.mjs`, which carries the new
-  version into `.claude-plugin/plugin.json` and stages it, so the manifest lands
-  in the release commit rather than a release behind.
-- `test/skills.test.js` refuses a mismatch, and checks every tool and argument
-  the skills name against `contracts/mcp-personal-tools.json`.
+  version into `.claude-plugin/plugin.json` and into `server.json`, and stages
+  both, so neither lands a release behind.
+- `test/skills.test.js` refuses either mismatch, and checks every tool and
+  argument the skills name against `contracts/mcp-personal-tools.json`.
+
+The registry entry needed that hook: it was kept by hand, and by 0.2.1 it had
+drifted to 0.1.2 with nothing going red. The registry refuses an entry whose
+package version is not the published one, so the drift would have surfaced as a
+failed publish rather than as a stale file.
 - The release attaches `orla-<version>.mcpb`, the Claude Desktop bundle:
   `scripts/build-mcpb.mjs` zips `dist/` with a manifest written from
   `package.json`, so no third file carries the version. The bundle runs the

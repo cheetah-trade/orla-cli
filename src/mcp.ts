@@ -18,7 +18,7 @@ import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 
-import { accessToken, DEFAULT_API, login, reach } from "./auth.js";
+import { accessToken, DEFAULT_API, doorPath, login, reach } from "./auth.js";
 import { badAnswer, describe, refused } from "./errors.js";
 import { load } from "./store.js";
 
@@ -28,7 +28,7 @@ export type Rpc = { jsonrpc: "2.0"; id?: unknown; method?: string; params?: unkn
 
 async function post(body: unknown, extraHeaders: Record<string, string> = {}): Promise<Rpc> {
   const { token, session } = await accessToken();
-  const res = await reach(`${session.apiBase}/mcp`, {
+  const res = await reach(`${session.apiBase}${doorPath(session)}`, {
     method: "POST",
     headers: {
       "content-type": "application/json",

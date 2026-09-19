@@ -39,6 +39,26 @@ export const PORTS = [7654, 7655, 7656, 0];
 
 const SCOPE = "orla.read orla.write";
 
+/**
+ * Orla answers MCP at two addresses, and the difference is not a label.
+ *
+ * `/mcp/personal` is a person's own books: every tool that moves money is
+ * withheld from the list and refused if a model asks for one by name, so the
+ * promise holds whatever the consent page was told. `/mcp` offers both shapes,
+ * and the consent page there can mint an agent with a budget of its own.
+ *
+ * `login` asks for the personal door unless told otherwise, because that is
+ * what this client documents itself as. A session stores the door it was minted
+ * at, so an existing connection keeps going where it already goes.
+ */
+export type Door = "personal" | "agent";
+
+const DOOR_PATHS: Record<Door, string> = { personal: "/mcp/personal", agent: "/mcp" };
+
+export function doorPath(session: Pick<Session, "door">): string {
+  return DOOR_PATHS[session.door ?? "agent"];
+}
+
 function pkce(): { verifier: string; challenge: string } {
   const verifier = randomBytes(32).toString("base64url");
   const challenge = createHash("sha256").update(verifier).digest("base64url");
@@ -171,10 +191,10 @@ async function postForm(url: string, body: Record<string, string>): Promise<Reco
   return json;
 }
 
-export async function login(apiBase: string): Promise<Session> {
+export async function login(apiBase: string, door: Door = "personal"): Promise<Session> {
   const { verifier, challenge } = pkce();
   const state = randomBytes(16).toString("base64url");
-  const resource = `${apiBase}/mcp`;
+  const resource = `${apiBase}${DOOR_PATHS[door]}`;
 
   // The port is only known once something is listening, so the listener binds
   // before the URL is built and the browser opens after.
@@ -215,6 +235,7 @@ export async function login(apiBase: string): Promise<Session> {
     accessToken: tokens["access_token"] ?? "",
     refreshToken: tokens["refresh_token"] ?? "",
     expiresAt: Date.now() + Number(tokens["expires_in"] ?? 0) * 1000,
+    door,
   };
   save(session);
   return session;
@@ -231,7 +252,7 @@ export async function accessToken(): Promise<{ token: string; session: Session }
     grant_type: "refresh_token",
     refresh_token: session.refreshToken,
     client_id: CLIENT_ID,
-    resource: `${session.apiBase}/mcp`,
+    resource: `${session.apiBase}${doorPath(session)}`,
   });
   const refreshed: Session = {
     ...session,

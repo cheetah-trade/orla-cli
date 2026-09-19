@@ -13,7 +13,7 @@ export type Command = {
 };
 
 export const COMMANDS: Command[] = [
-  { name: "login", args: "[--api URL]", summary: "connect this machine (opens a browser)" },
+  { name: "login", args: "[--api URL] [--agent]", summary: "connect this machine (opens a browser); --agent asks for the door where a bot can be minted" },
   { name: "logout", summary: "forget the stored session" },
   { name: "whoami", summary: "who this connection is, and what it reaches" },
   { name: "spaces", summary: "the spaces in reach" },

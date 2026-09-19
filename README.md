@@ -30,6 +30,13 @@ its own limits, set in the app under Agents. The tools that move money are not
 in the list this connection is given, and are refused at the endpoint if asked
 for by name.
 
+That is not a matter of trust in this client: `orla login` asks for the personal
+address, where those tools do not exist, so the promise survives whatever gets
+ticked on the consent page. `orla login --agent` asks for the other address, the
+one where a bot with its own budget can be minted. A session remembers which
+door issued its tokens and keeps using it, so an existing connection is not
+re-pointed by an update.
+
 The one command on the agent's side is `orla fetch`. It never reads the stored
 session: it takes an agent key from `ORLA_AGENT_KEY` and asks Orla to fetch a
 URL, paying its 402 from that agent's own float inside the ceilings its owner
@@ -40,7 +47,7 @@ agent](#fetching-a-paid-url-as-an-agent).
 
 | Command | What it does |
 |---|---|
-| `orla login [--api URL]` | Connect this machine. Opens a browser. |
+| `orla login [--api URL] [--agent]` | Connect this machine. Opens a browser. `--agent` asks for the door where a bot can be minted. |
 | `orla logout` | Forget the stored session. |
 | `orla whoami` | Which connection this is and which spaces it reaches. |
 | `orla spaces` | The spaces in reach. |
@@ -184,8 +191,8 @@ support of its own:
 }
 ```
 
-The bridge uses the session `orla login` stored and refreshes it. With no
-session it signs in by itself, since a client that spawned it has no terminal
+The bridge uses the session `orla login` stored, refreshes it, and posts to the
+door that session was minted at. With no session it signs in by itself, since a client that spawned it has no terminal
 to type into: it opens the browser on the consent page, stays a well-formed
 server meanwhile (`initialize` and `ping` answered, `tools/list` empty, a tool
 call refused with `cli.sign_in_in_progress`), and tells the client
@@ -259,6 +266,54 @@ different deployment, and the session records which one minted it, so a token
 from one environment is never replayed against another.
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Evals
+
+`test/skills.test.js` checks that the skill agrees with the CLI. It cannot check
+the thing the skill exists for: whether an agent reading it stops guessing. That
+is what `evals/` is for. Each case runs twice, once with this plugin and once
+without it, so the difference is what the skill itself changed.
+
+| Case | What it checks |
+|---|---|
+| `space-default` | `orla use` takes the space id as a positional argument, and not as a `--space` flag |
+| `payment-approved` | `approved` means a person signed it, not that the money left; only `executed` carries a reference |
+| `cli-cannot-pay` | no command here moves money, and the answer says so instead of inventing one |
+
+```bash
+claude plugin eval .                              # both arms, three runs per case
+claude plugin eval . --case space-default --runs 1
+```
+
+The MCP server stays down while they run: under the default `--mocks record` a
+server with no mock is not started, so the cases need no live door, no OAuth and
+no account.
+
+### What the last run measured
+
+2026-09-18, plugin 0.2.1, Claude Code 2.1.270, three runs per case in each arm,
+model not pinned (the CLI's default, and the default judge). Whole suite: 294
+seconds, $1.53.
+
+| Case | With the skill | Without it | Δ |
+|---|---|---|---|
+| `space-default` | 1.00 | 0.33 | +0.67 |
+| `cli-cannot-pay` | 1.00 | 0.67 | +0.33 |
+| `payment-approved` | 1.00 | 0.83 | +0.17 |
+
+Read it honestly. The skill earns most of its keep on the command surface:
+without it the model got `orla use` wrong in three runs out of three, because
+guessing a CLI's argument shape is exactly what it cannot do. On the money
+questions the base model is already careful most of the time, and the skill
+turns "most of the time" into every run, which is the part that matters when
+the answer is whether somebody was paid.
+
+Worth knowing about the baseline arm: without the skill the model usually did
+not invent a command, it declined and asked to see `--help` first. That is the
+better failure, and it is still a failure for an agent expected to act.
+
+These numbers are one run on one day, not a benchmark. Re-run the command above
+and you will get your own.
 
 ## License
 

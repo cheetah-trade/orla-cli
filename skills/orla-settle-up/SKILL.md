@@ -31,6 +31,12 @@ Group and family spaces are the ones this is for. A personal space answers with
 a single participant and an empty plan, which is a correct answer, not an error:
 there is nobody to settle with.
 
+Participants are not all account holders. A row with `kind: "guest"` and a null
+`user_id` is somebody in the trip who has no Orla login, and they count in the
+split exactly like a member. A row named for the group's kitty is a pot, not a
+person, and it takes no share of an ordinary expense: three people plus a kitty
+divide 120 into 40, 40 and 40.
+
 Two visibility rules shape what you can honestly report. A caregiver sees only
 their own line in the balances and only the expenses they paid or are named in,
 so a caregiver's total is their own, never the household's. And `net` is per

@@ -190,6 +190,28 @@ test("the plugin and the package carry the same version", () => {
   }
 });
 
+/**
+ * Every published address for this server, in one place.
+ *
+ * Three files tell somebody where Orla answers: the plugin's `.mcp.json`, the
+ * registry entry a directory resolves, and the readme. Two of them said
+ * different things: the plugin pointed at the personal door while the registry
+ * entry handed out `/api/mcp`, the address whose consent page can mint an agent
+ * with a budget, under a description that reads "it cannot pay".
+ */
+const PERSONAL_DOOR = "https://app.orla.finance/api/mcp/personal";
+
+test("the registry entry sends people to the door its own description promises", () => {
+  const entry = JSON.parse(readFileSync(join(ROOT, "server.json"), "utf8"));
+  const remotes = (entry.remotes ?? []).map((r) => r.url);
+  if (remotes.length !== 1 || remotes[0] !== PERSONAL_DOOR) {
+    throw new Error(
+      `server.json offers ${remotes.join(", ") || "no remote"}; it is the address a directory hands to a person, ` +
+        `and the entry says this server cannot pay, so it is ${PERSONAL_DOOR}.`,
+    );
+  }
+});
+
 test("the plugin connects to Orla's own personal door and nowhere else", () => {
   // Installing this plugin is an invitation to connect a financial account, and
   // the address in the manifest is what the browser lands on. A pull request
@@ -204,11 +226,30 @@ test("the plugin connects to Orla's own personal door and nowhere else", () => {
   if (servers.length !== 1) throw new Error(`.mcp.json declares ${servers.length} servers, expected one`);
   const [name, server] = servers[0];
   if (name !== "orla") throw new Error(`the server is named ${name}`);
-  if (server.url !== "https://app.orla.finance/api/mcp/personal") {
+  if (server.url !== PERSONAL_DOOR) {
     throw new Error(`.mcp.json points at ${server.url}`);
   }
   if (server.command || server.args) {
     throw new Error("the plugin runs no local command: it is an https endpoint and a consent page");
+  }
+});
+
+test("the MCP registry entry carries the version that is being released", () => {
+  // Three files name a version here: the package, the plugin manifest and the
+  // registry entry. The first two are kept in step by `npm version` and the
+  // test above; the registry entry was not, and it sat two releases behind
+  // (0.1.2 against a published 0.2.1) without anything going red. The registry
+  // refuses an entry whose package version is not the published one, so the
+  // drift surfaces as a failed publish at the worst moment.
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
+  const entry = JSON.parse(readFileSync(join(ROOT, "server.json"), "utf8"));
+  const versions = [entry.version, ...(entry.packages ?? []).map((p) => p.version)];
+  const wrong = versions.filter((v) => v !== pkg.version);
+  if (wrong.length) {
+    throw new Error(
+      `server.json says ${versions.join(", ")} and package.json says ${pkg.version}. ` +
+        "The registry entry ships with the release, so it carries the release's version.",
+    );
   }
 });
 
