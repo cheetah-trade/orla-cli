@@ -75,8 +75,8 @@ it was, so a shell script can branch without parsing anything:
 | 0 | done |
 | 1 | a failure none of the rows below describes |
 | 2 | the command line: unknown command, missing flag |
-| 3 | no session here, or one Orla no longer honours |
-| 4 | a space-scoped command with no space to work in, or several |
+| 3 | no session here, or one Orla no longer honours; no agent key, or one Orla refused |
+| 4 | a space-scoped command with no space, or several |
 | 5 | Orla could not be reached |
 | 6 | Orla was reached and said no, or answered in a shape the CLI cannot read |
 | 7 | signing in was abandoned or came back wrong |
@@ -126,16 +126,26 @@ first payment. Outside that fence the answer is a refusal with the reason
 (`agent.x402_host_not_allowed`, `agent.x402_over_max`, ...) and nothing is paid.
 
 The resource goes to stdout and the receipt to stderr, so redirecting stdout
-gives you the file. With `--json` the whole answer is in the envelope:
+gives you the file, byte for byte (a trailing newline is added only when stdout
+is a terminal). With `--json` the whole answer is in the envelope:
 `data.result.paid` says whether money moved, `amount_usd`, `host` and `tx_hash`
 say how much, to whom and with what reference, `status` and `body` are the
 resource. `--space <id>` names the space when the key reaches several;
-`--api URL` points at another deployment.
+`--api URL` points at another deployment. A URL that is not `https`, or carries
+a user name or a password, is refused before anything is sent (exit 2). The CLI
+waits up to ninety seconds for Orla's answer, since Orla gives the host twenty
+seconds a hop and follows up to two redirects; past that it is exit 5,
+`cli.unreachable`.
 
 Every run is a new purchase. To make a retry safe, pass the same
-`--idempotency-key <text>` again: Orla answers a key it has already paid on
-with `agent.x402_already_signed` and the record of that payment, rather than
-paying twice.
+`--idempotency-key <text>` again. A retry of a purchase that finished answers
+exactly what the first run did, the same receipt included, and pays nothing.
+Two cases refuse instead, both with exit 6: `agent.idempotency_conflict`, the
+same key was used for a different URL; and `agent.x402_already_signed`, the
+first run committed the payment authorization but Orla holds no answer to
+replay (it failed after signing, or the key is older than a day). The message
+of that refusal is the record: the amount, the host, the nonce, its expiry and
+the settlement hash if one was reported. A new key pays again.
 
 ## As an MCP server
 

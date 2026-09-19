@@ -196,19 +196,47 @@ pinned at the first payment. Read the envelope, not the status:
   money. Say "no charge". Do not say "paid".
 - `ok` is `false`: nothing was paid. The code says why, in Orla's own words:
   `agent.x402_host_not_allowed` (the host is not on the list), `agent.x402_over_max`
-  (over the per-request ceiling), `agent.x402_no_hosts`, `agent.x402_no_ceiling`,
-  `agent.x402_no_daily_cap` (the owner has not fenced the wallet yet),
-  `agent.observing` (the agent is still in observation mode; a purchase cannot
-  be queued because the price expires), `agent.no_wallet`. All of these are the
-  owner's to change, under Agents in the app. Do not retry under another host,
-  another URL or another key.
-- `agent.x402_already_signed`: this `--idempotency-key` already paid once, and
-  the details carry that payment. Report it; do not pay again.
+  (over the per-request ceiling), `agent.amount_cap` (over what is left of the
+  daily cap; the message says how much is left), `agent.x402_no_hosts`,
+  `agent.x402_no_ceiling`, `agent.x402_no_daily_cap` (the owner has not fenced
+  the wallet yet), `agent.observing` (the agent is still in observation mode; a
+  purchase cannot be queued because the price expires), `agent.no_wallet`. All
+  of these are the owner's to change, under Agents in the app. Do not retry
+  under another host, another URL or another key.
+- `agent.x402_recipient_changed`: the host now asks to be paid at an address it
+  was never paid at before. Nothing was paid. The owner confirms the new address
+  in the app, under Agents, in the agent's wallet drawer, section "Where hosts
+  are paid"; ask the person to do that, and do not retry until they have.
+- The URL itself, refused by the fence before any payment: `agent.x402_scheme`
+  (not https), `agent.x402_url` (malformed, or a user name or password in it),
+  `agent.x402_port` (not 443), `agent.x402_host` (a private or unresolvable
+  address, or a name that resolves to one). The CLI refuses the first two
+  before sending anything (exit 2). None of these is fixed by retrying.
+- The other side: `agent.x402_version` (the host speaks an x402 version Orla
+  does not), `agent.x402_unsupported` (it wants a payment Orla cannot make; Orla
+  signs USDC on Base, Ethereum or Polygon), `agent.x402_redirects` (more than
+  two redirects), `agent.x402_too_large` (the resource is bigger than Orla will
+  read). Report them as the host's, not the owner's; nothing was paid.
+- `agent.x402_already_signed`: this `--idempotency-key` committed a payment
+  authorization, but Orla holds no answer to replay (the first run failed
+  after signing, or the key is older than a day). The message is the record:
+  the amount, the host, the nonce, its expiry and the settlement hash when one
+  was reported. Report it as paid once; do not pay again, and do not retry with
+  a new key unless the person says so. A retry of a purchase that finished
+  never reaches this: it answers exactly what the first run did, receipt
+  included, and pays nothing.
+- `agent.idempotency_conflict`: this `--idempotency-key` was already used for a
+  different URL. A different purchase needs a key of its own.
+  `agent.idempotency_in_flight`: the same key is being processed right now;
+  wait a moment and retry with the same key.
 
 Without `--json`, the resource is on stdout and the receipt on stderr, so
-`orla fetch URL > file` keeps the file clean. Every run is a new purchase:
-pass the same `--idempotency-key <text>` to a retry so it is the same purchase
-to Orla. `--space <id>` when the key reaches several spaces.
+`orla fetch URL > file` keeps the file clean, byte for byte (a trailing newline
+is added only on a terminal). Every run is a new purchase: pass the same
+`--idempotency-key <text>` to a retry so it is the same purchase to Orla.
+`--space <id>` when the key reaches several spaces. The CLI waits up to ninety
+seconds for Orla's answer (Orla gives the host twenty seconds a hop and follows
+up to two redirects); past that it is exit 5, `cli.unreachable`.
 
 ## As an MCP server
 

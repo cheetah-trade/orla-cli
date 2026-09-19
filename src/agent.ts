@@ -16,8 +16,20 @@
 
 import { randomUUID } from "node:crypto";
 
-import { reach } from "./auth.js";
+import { DEFAULT_API, reach } from "./auth.js";
 import { agentNoSpaces, badAnswer, keyRefused, noAgentKey, refused, spaceRequired, usage } from "./errors.js";
+
+/**
+ * How long one call on the agent door may take. Orla fetches the URL itself
+ * and gives the host twenty seconds a hop, up to two redirects and the paid
+ * request, then settles the payment; ninety seconds covers the slowest honest
+ * answer with room to spare, and a call past it is a network failure (exit 5)
+ * rather than a shell that hangs forever.
+ */
+export const AGENT_TIMEOUT_MS = 90_000;
+
+/** The way out when the agent door cannot be reached: there is no session to clear. */
+const AGENT_ADVICE = `If this machine is online, check the address --api points at (the default is ${DEFAULT_API}).`;
 
 /** What Orla answers to a mutating agent call, with the x402 result inside. */
 export type Fetched = {
@@ -67,11 +79,16 @@ export async function agentCall(
     headers["content-type"] = "application/json";
     headers["Idempotency-Key"] = idempotencyKey ?? randomUUID();
   }
-  const res = await reach(`${apiBase}${path}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  const res = await reach(
+    `${apiBase}${path}`,
+    {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(AGENT_TIMEOUT_MS),
+    },
+    AGENT_ADVICE,
+  );
   const text = await res.text();
   let parsed: unknown;
   if (text) {
@@ -106,7 +123,12 @@ export async function resolveAgentSpace(apiBase: string, flag?: string): Promise
   throw spaceRequired(spaces);
 }
 
-/** A URL the server could fetch at all; the rest of the checks are Orla's. */
+/**
+ * A URL Orla would take at all, refused here before any network. The words
+ * are the server's own (`agent.x402_scheme`, `agent.x402_url`), so a program
+ * reads one message whichever side refused; the rest of the fence (the port,
+ * the host, where its name resolves) stays Orla's, because only Orla resolves it.
+ */
 export function checkUrl(url: string): string {
   let parsed: URL;
   try {
@@ -114,8 +136,11 @@ export function checkUrl(url: string): string {
   } catch {
     throw usage(`orla fetch <url>: not a URL: ${url}`);
   }
-  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    throw usage(`orla fetch <url>: the url must start with https://`);
+  if (parsed.protocol !== "https:") {
+    throw usage("orla fetch <url>: the address must use https");
+  }
+  if (parsed.username || parsed.password) {
+    throw usage("orla fetch <url>: credentials in the URL are not allowed");
   }
   return url;
 }
@@ -135,6 +160,11 @@ export async function fetchPaid(
  * does what it looks like, and the receipt on stderr. Whether money moved is
  * read from `paid`, never guessed from the status: a URL that never asked for
  * money is the common case, and printing "paid" over it would be a lie.
+ *
+ * The body is written byte for byte when stdout is a pipe or a file: a
+ * newline added for the terminal's sake would land inside the file too, and a
+ * resource that ends without one is then not the resource. On a terminal the
+ * prompt should not sit on the body's last line, so there one is added.
  */
 export function printFetched(out: Fetched): void {
   if (out.applied === false) {
@@ -143,7 +173,7 @@ export function printFetched(out: Fetched): void {
   }
   const r = out.result ?? {};
   const body = String(r.body ?? "");
-  if (body) process.stdout.write(body.endsWith("\n") ? body : `${body}\n`);
+  if (body) process.stdout.write(process.stdout.isTTY && !body.endsWith("\n") ? `${body}\n` : body);
   const receipt = r.paid
     ? `paid ${r.amount_usd ?? "?"} USD to ${r.host ?? "the host"}${r.tx_hash ? `, tx ${r.tx_hash}` : ""}`
     : "no charge";

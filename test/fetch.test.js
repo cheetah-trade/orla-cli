@@ -86,14 +86,40 @@ test("exit 3: no key in the environment, before anything is asked of Orla", asyn
   match(answer.error.message, /ORLA_AGENT_KEY/);
 });
 
-test("exit 2: no url, or something that is not one", async () => {
+test("exit 2: no url, or something Orla's fence would refuse, before anything is sent", async () => {
   const { env } = isolated({ ORLA_AGENT_KEY: KEY });
   let answer = await orla(["fetch", "--json"], env);
   strictEqual(answer.code, 2);
   strictEqual(JSON.parse(answer.out).error.code, "cli.usage");
+  // The same words as the server's refusals (agent.x402_scheme, agent.x402_url).
   answer = await orla(["fetch", "ftp://files.example.com/a", "--space", "s1", "--json"], env);
   strictEqual(answer.code, 2);
-  match(JSON.parse(answer.out).error.message, /https:\/\//);
+  match(JSON.parse(answer.out).error.message, /must use https/);
+  answer = await orla(["fetch", "http://api.example.com/x", "--space", "s1", "--json"], env);
+  strictEqual(answer.code, 2);
+  match(JSON.parse(answer.out).error.message, /must use https/);
+  answer = await orla(["fetch", "https://user:secret@api.example.com/x", "--space", "s1", "--json"], env);
+  strictEqual(answer.code, 2);
+  match(JSON.parse(answer.out).error.message, /credentials in the URL/);
+  ok(!answer.out.includes("secret"), "the password in the URL is not echoed");
+  // Without --space the space would be asked of /agent/me first; a bad URL
+  // must not get that far. Port 1 answers nobody, so reaching it would be exit 5.
+  answer = await orla(["fetch", "ftp://files.example.com/a", "--api", "http://127.0.0.1:1", "--json"], env);
+  strictEqual(answer.code, 2);
+  strictEqual(JSON.parse(answer.out).error.code, "cli.usage");
+});
+
+test("--json before the url is a switch, not a flag that eats the url", async () => {
+  const stub = await stubAgentDoor(() => ({ status: 200, json: PAID }));
+  try {
+    const { env } = isolated({ ORLA_AGENT_KEY: KEY });
+    const { code, out } = await orla(["fetch", "--json", "https://api.example.com/x", "--space", "s1", "--api", stub.apiBase], env);
+    strictEqual(code, 0);
+    deepStrictEqual(JSON.parse(out), { ok: true, data: PAID });
+    deepStrictEqual(stub.seen[0].body, { url: "https://api.example.com/x" });
+  } finally {
+    stub.close();
+  }
 });
 
 test("a paid fetch: the agent call Orla sees, and the envelope with the receipt", async () => {
@@ -139,14 +165,21 @@ test("for a person: the resource on stdout, the receipt on stderr, and paid is r
     const { env } = isolated({ ORLA_AGENT_KEY: KEY });
     let answer = await orla(["fetch", "https://api.example.com/x", "--space", "s1", "--api", stub.apiBase], env);
     strictEqual(answer.code, 0);
-    strictEqual(answer.out, '{"answer":42}\n');
+    // stdout is a pipe here, as it is under `> file`: the body byte for byte,
+    // no newline added for a terminal's sake
+    strictEqual(answer.out, '{"answer":42}');
     strictEqual(answer.err, "paid 0.02 USD to api.example.com, tx 0xabc (HTTP 200)\n");
 
     // a URL that never asked for money: the common case, and not "paid"
     result = { paid: false, status: 200, body: "free" };
     answer = await orla(["fetch", "https://api.example.com/x", "--space", "s1", "--api", stub.apiBase], env);
-    strictEqual(answer.out, "free\n");
+    strictEqual(answer.out, "free");
     strictEqual(answer.err, "no charge (HTTP 200)\n");
+
+    // a body that ends in a newline keeps exactly that one
+    result = { paid: false, status: 200, body: "line\n" };
+    answer = await orla(["fetch", "https://api.example.com/x", "--space", "s1", "--api", stub.apiBase], env);
+    strictEqual(answer.out, "line\n");
   } finally {
     stub.close();
   }

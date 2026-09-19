@@ -128,7 +128,7 @@ function bind(port: number): Promise<Listener | null> {
  * session stored against an Orla this machine can no longer reach, which the
  * user has no way to guess.
  */
-export async function reach(url: string, init: RequestInit): Promise<Response> {
+export async function reach(url: string, init: RequestInit, advice: string = SESSION_ADVICE): Promise<Response> {
   try {
     return await fetch(url, init);
   } catch (err) {
@@ -140,13 +140,18 @@ export async function reach(url: string, init: RequestInit): Promise<Response> {
       }
     })();
     const why = err instanceof Error && err.cause instanceof Error ? err.cause.message : (err as Error)?.message;
-    throw unreachable(
-      `cannot reach ${host}${why ? ` (${why})` : ""}. ` +
-        "If this machine is online, the stored session may point at an Orla that is gone: " +
-        "`orla logout` and `orla login` again.",
-    );
+    throw unreachable(`cannot reach ${host}${why ? ` (${why})` : ""}. ${advice}`);
   }
 }
+
+/**
+ * The way out, for the door that stores a session. The agent door has none to
+ * clear and passes its own advice: `orla logout` there would be advice about
+ * a thing that does not exist.
+ */
+const SESSION_ADVICE =
+  "If this machine is online, the stored session may point at an Orla that is gone: " +
+  "`orla logout` and `orla login` again.";
 
 async function postForm(url: string, body: Record<string, string>): Promise<Record<string, string>> {
   const res = await reach(url, {

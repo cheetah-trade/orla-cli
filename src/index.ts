@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { fetchPaid, printFetched, resolveAgentSpace } from "./agent.js";
+import { checkUrl, fetchPaid, printFetched, resolveAgentSpace } from "./agent.js";
 import { DEFAULT_API, login } from "./auth.js";
 import {
   accounts,
@@ -114,6 +114,9 @@ async function run(argv: string[]): Promise<void> {
     // the key comes from the environment, and the space is the key's own.
     const url = words[1];
     if (!url) throw usage("orla fetch <url>");
+    // Before the first request: a URL Orla would refuse is a usage error
+    // here, not a round trip to /agent/me and then a refusal.
+    checkUrl(url);
     const apiBase = optional(flags, "api") ?? DEFAULT_API;
     const spaceId = await resolveAgentSpace(apiBase, optional(flags, "space"));
     const out = await fetchPaid(apiBase, spaceId, url, optional(flags, "idempotency-key"));
