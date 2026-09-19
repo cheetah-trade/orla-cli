@@ -70,19 +70,6 @@
     },
     {
       "arguments": [
-        "limit",
-        "q",
-        "space_id"
-      ],
-      "destructive": false,
-      "name": "orla_find_service",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
         "space_id"
       ],
       "destructive": false,
