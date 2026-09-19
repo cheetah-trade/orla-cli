@@ -20,9 +20,12 @@ know what belongs in it before you spend an evening.
   do live in Orla's backend, which is not open source. The CLI cannot widen its
   own authorization, and a PR that tries to work around a refusal is fixing the
   wrong end.
-- **Anything that moves money.** A personal connection reads and records. That
-  boundary is enforced on the server too, so a client-side change cannot lift
-  it, but it is also not what this package is for.
+- **Anything that moves money from a personal connection.** A personal
+  connection reads and records. That boundary is enforced on the server too, so
+  a client-side change cannot lift it, but it is also not what this package is
+  for. The one paying command, `orla fetch`, works only with an agent key from
+  the environment and inside the ceilings the owner set on the server; a
+  client-side change cannot widen those either.
 
 ## Sign your commits
 

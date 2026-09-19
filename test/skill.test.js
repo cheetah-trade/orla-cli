@@ -38,10 +38,23 @@ test("the skill names every command, and no command that does not exist", () => 
   }
 });
 
-test("the skill's exit-code table is the code's", () => {
-  const table = SKILL.split("Exit codes:")[1].split("\n\n")[1];
-  const rows = table.split("\n").filter((l) => /^\| \d/.test(l)).map((l) => Number(l.split("|")[1]));
-  deepStrictEqual(rows.sort(), Object.values(EXIT).sort(), "one row per exit code, no more and no fewer");
+/** The exit-code table that starts with `header`: exit code to its meaning. */
+function exitTable(text, header) {
+  const at = text.indexOf(header);
+  ok(at >= 0, `no table headed ${header}`);
+  const rows = text.slice(at).split("\n\n")[0].split("\n").filter((l) => /^\| \d/.test(l));
+  return new Map(rows.map((l) => l.split("|").map((c) => c.trim())).map((c) => [Number(c[1]), c[2]]));
+}
+
+test("the skill's and the README's exit-code tables are the code's, and each other's", () => {
+  const skill = exitTable(SKILL, "| Code | Meaning |");
+  const readme = exitTable(README, "| Exit | Meaning |");
+  const codes = Object.values(EXIT).sort();
+  deepStrictEqual([...skill.keys()].sort(), codes, "SKILL.md: one row per exit code, no more and no fewer");
+  deepStrictEqual([...readme.keys()].sort(), codes, "README.md: one row per exit code, no more and no fewer");
+  // Two tables of the same numbers drift apart one row at a time; the README
+  // was one row behind the skill on exit 3 before this compared them.
+  for (const code of codes) strictEqual(readme.get(code), skill.get(code), `exit ${code} means one thing in README.md and another in SKILL.md`);
   for (const code of ["cli.usage", "cli.not_connected", "cli.session_expired", "cli.no_spaces", "cli.space_required", "cli.unreachable", "cli.bad_answer", "cli.sign_in_cancelled", "cli.sign_in_in_progress"]) {
     ok(SKILL.includes(`\`${code}\``), `SKILL.md does not name ${code}`);
   }
