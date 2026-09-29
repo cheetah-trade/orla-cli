@@ -193,6 +193,31 @@ busy month is read month by month rather than in one gulp.
 `contracts/mcp-personal-tools.json` is the committed shape of that door, and
 `test/skills.test.js` checks every tool and argument the skills name against it.
 
+## As a ChatGPT or Codex plugin
+
+The same plugin is described a second time in the portable Agent Plugins format
+that ChatGPT and Codex read: `plugin.json` and `mcp.json` at the root, with the
+directory card (name, short and long description, category, starter prompts,
+icon) under `extensions.com.openai`, and a repo marketplace in
+`.agents/plugins/marketplace.json`. The skills and the door are the ones above:
+five skills in `skills/`, and `https://app.orla.finance/api/mcp/personal`, where
+nothing that moves money exists.
+
+To try it in Codex from this repository:
+
+```
+codex plugin marketplace add cheetah-trade/orla-cli
+```
+
+then install `orla` from the Orla marketplace in the Plugins Directory of the
+ChatGPT desktop app. The first tool call opens Orla's consent page.
+
+Listing it in the public directory shared by ChatGPT and Codex is a separate
+submission through OpenAI's portal, made by the account that owns the listing.
+`test/manifests.test.js` keeps both descriptions of the plugin at one version and
+one address, and keeps the directory text free of plans and upgrades, which the
+ChatGPT plugin rules do not allow.
+
 ## Where the token lives
 
 The OS keychain: `security` on macOS, `secret-tool` on Linux. Where neither
