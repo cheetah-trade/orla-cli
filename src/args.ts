@@ -11,6 +11,13 @@ import { usage } from "./errors.js";
 
 export type Flags = Record<string, string | boolean>;
 
+/**
+ * The switches. A switch never takes the word after it as a value, so
+ * `orla fetch --json https://…` keeps the URL as the command's word instead of
+ * reading it as the value of `--json` and then refusing for want of a URL.
+ */
+export const SWITCHES = new Set(["json", "help", "version"]);
+
 export function parse(argv: string[]): { words: string[]; flags: Flags } {
   const words: string[] = [];
   const flags: Flags = {};
@@ -22,7 +29,7 @@ export function parse(argv: string[]): { words: string[]; flags: Flags } {
     }
     const name = arg.slice(2);
     const next = argv[i + 1];
-    if (next === undefined || next.startsWith("--")) {
+    if (SWITCHES.has(name) || next === undefined || next.startsWith("--")) {
       flags[name] = true;
     } else {
       flags[name] = next;

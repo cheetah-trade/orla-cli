@@ -19,6 +19,17 @@ test("a flag followed by another flag is a boolean, not a value", () => {
   deepStrictEqual(flags, { json: true, limit: "10" });
 });
 
+test("a switch never takes the next word as its value", () => {
+  // `orla fetch --json https://…` must keep the URL as the command's word:
+  // read as the value of --json, the command refuses for want of a URL and
+  // the envelope the caller asked for never comes.
+  const { words, flags } = parse(["fetch", "--json", "https://api.example.com/x"]);
+  deepStrictEqual(words, ["fetch", "https://api.example.com/x"]);
+  deepStrictEqual(flags, { json: true });
+  deepStrictEqual(parse(["--help", "tx"]).flags, { help: true });
+  deepStrictEqual(parse(["--version", "now"]).words, ["now"]);
+});
+
 test("a trailing flag with no value is a boolean", () => {
   deepStrictEqual(parse(["whoami", "--json"]).flags, { json: true });
 });

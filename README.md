@@ -37,6 +37,12 @@ one where a bot with its own budget can be minted. A session remembers which
 door issued its tokens and keeps using it, so an existing connection is not
 re-pointed by an update.
 
+The one command on the agent's side is `orla fetch`. It never reads the stored
+session: it takes an agent key from `ORLA_AGENT_KEY` and asks Orla to fetch a
+URL, paying its 402 from that agent's own float inside the ceilings its owner
+set. Without the key it refuses. See [Fetching a paid URL as an
+agent](#fetching-a-paid-url-as-an-agent).
+
 ## Commands
 
 | Command | What it does |
@@ -50,6 +56,7 @@ re-pointed by an update.
 | `orla tx list` | Transactions. `--from --to --search --account --limit`. |
 | `orla tx add` | Record one. `--account --kind --amount --date [--payee --note]`. |
 | `orla export` | The same rows as CSV on stdout. |
+| `orla fetch <url>` | Fetch a URL as an agent, paying its 402 from the agent's float. Needs `ORLA_AGENT_KEY`. |
 | `orla tools` | Which tools this connection was given. |
 | `orla mcp [--api URL]` | stdio bridge (below). |
 | `orla version` | Which version this is. |
@@ -75,8 +82,8 @@ it was, so a shell script can branch without parsing anything:
 | 0 | done |
 | 1 | a failure none of the rows below describes |
 | 2 | the command line: unknown command, missing flag |
-| 3 | no session here, or one Orla no longer honours |
-| 4 | a space-scoped command with no space to work in, or several |
+| 3 | no session here, or one Orla no longer honours; no agent key, or one Orla refused |
+| 4 | a space-scoped command with no space, or several |
 | 5 | Orla could not be reached |
 | 6 | Orla was reached and said no, or answered in a shape the CLI cannot read |
 | 7 | signing in was abandoned or came back wrong |
@@ -102,6 +109,50 @@ Environment variables the CLI reads:
 | `ORLA_NO_BROWSER=1` | never launch a browser; the sign-in URL is printed on stderr instead |
 | `ORLA_NO_KEYCHAIN=1` | keep the session in a `0600` file instead of the OS keychain (tests, CI, headless boxes) |
 | `XDG_CONFIG_HOME` | where that file lives (`<dir>/orla/session.json`) |
+| `ORLA_AGENT_KEY` | an agent key from Agents in the app; the only credential `orla fetch` uses, and never stored |
+
+## Fetching a paid URL as an agent
+
+An agent that has to buy something over [x402](https://orla.finance/en/ai-agents/api)
+usually does it from its own code, with the key in a header. From a shell, or
+from a program that would rather not carry an HTTP client, the same call is one
+command:
+
+```bash
+export ORLA_AGENT_KEY=...            # shown once, under Agents in the app
+orla fetch https://api.example.com/answer > answer.json
+# stderr: paid 0.02 USD to api.example.com, tx 0x... (HTTP 200)
+```
+
+Orla fetches the URL for the agent. If the answer is an ordinary page, it comes
+back as is and the receipt says `no charge`. If it is a 402 with a price, Orla
+pays it from the agent's float, but only inside the fence the owner set: the
+host must be on the agent's list, the price under its per-request ceiling and
+its daily cap, and the address the host names must be the one pinned at the
+first payment. Outside that fence the answer is a refusal with the reason
+(`agent.x402_host_not_allowed`, `agent.x402_over_max`, ...) and nothing is paid.
+
+The resource goes to stdout and the receipt to stderr, so redirecting stdout
+gives you the file, byte for byte (a trailing newline is added only when stdout
+is a terminal). With `--json` the whole answer is in the envelope:
+`data.result.paid` says whether money moved, `amount_usd`, `host` and `tx_hash`
+say how much, to whom and with what reference, `status` and `body` are the
+resource. `--space <id>` names the space when the key reaches several;
+`--api URL` points at another deployment. A URL that is not `https`, or carries
+a user name or a password, is refused before anything is sent (exit 2). The CLI
+waits up to ninety seconds for Orla's answer, since Orla gives the host twenty
+seconds a hop and follows up to two redirects; past that it is exit 5,
+`cli.unreachable`.
+
+Every run is a new purchase. To make a retry safe, pass the same
+`--idempotency-key <text>` again. A retry of a purchase that finished answers
+exactly what the first run did, the same receipt included, and pays nothing.
+Two cases refuse instead, both with exit 6: `agent.idempotency_conflict`, the
+same key was used for a different URL; and `agent.x402_already_signed`, the
+first run committed the payment authorization but Orla holds no answer to
+replay (it failed after signing, or the key is older than a day). The message
+of that refusal is the record: the amount, the host, the nonce, its expiry and
+the settlement hash if one was reported. A new key pays again.
 
 ## As an MCP server
 
