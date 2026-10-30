@@ -1,0 +1,8 @@
+---
+type: metric
+name: CI time, median
+unit: min
+better: down
+target: 
+---
+2026-10-30 0.5 GitHub Actions and pull requests · Task Floor
