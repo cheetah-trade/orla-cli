@@ -220,12 +220,13 @@
     {
       "arguments": [
         "months",
+        "rationale",
         "space_id",
         "who"
       ],
       "destructive": false,
       "name": "orla_risk_trace",
-      "readOnly": true,
+      "readOnly": false,
       "required": [
         "space_id",
         "who"
