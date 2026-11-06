@@ -30,6 +30,33 @@ test("a name that does not resolve is the same kind of answer", async () => {
   );
 });
 
+test("a caller with no session to clear gets its own way out, and a timeout is the same kind of answer", async () => {
+  // The agent door: `orla logout` would be advice about a thing that does not
+  // exist there, so it passes what to check instead.
+  await rejects(
+    () => reach("http://127.0.0.1:1/agent/me", { method: "GET" }, "check --api"),
+    (err) => {
+      if (!/check --api/.test(err.message)) throw new Error(`no advice in: ${err.message}`);
+      if (/orla login/.test(err.message)) throw new Error(`the session remedy leaked into: ${err.message}`);
+      return err.code === "cli.unreachable";
+    },
+  );
+  // A server that never answers, with a deadline: unreachable, not a hang.
+  const { createServer } = await import("node:http");
+  const server = createServer(() => {});
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  const { port } = server.address();
+  try {
+    await rejects(
+      () => reach(`http://127.0.0.1:${port}/slow`, { method: "GET", signal: AbortSignal.timeout(100) }, "check --api"),
+      (err) => err.code === "cli.unreachable" && new RegExp(`127\\.0\\.0\\.1:${port}`).test(err.message),
+    );
+  } finally {
+    server.closeAllConnections?.();
+    server.close();
+  }
+});
+
 test("a server that answers is passed straight through", async () => {
   const { createServer } = await import("node:http");
   const server = createServer((_req, res) => {

@@ -22,6 +22,7 @@ export const COMMANDS: Command[] = [
   { name: "tx list", summary: "transactions (--from --to --search --account --limit)" },
   { name: "tx add", summary: "record one (--account --kind --amount --date [--payee --note])" },
   { name: "export", summary: "the same rows as CSV on stdout" },
+  { name: "fetch", args: "<url>", summary: "fetch a URL as an agent, paying its 402 (needs ORLA_AGENT_KEY)" },
   { name: "tools", summary: "which tools this connection is given" },
   { name: "mcp", args: "[--api URL]", summary: "stdio bridge, for clients that cannot speak HTTP" },
   { name: "version", summary: "which version this is" },
@@ -37,4 +38,5 @@ export const USAGE = [
   "Flags: --space <id> on anything space-scoped, --json for machine output.",
   "With --json every answer is {ok:true,data} or {ok:false,error:{code,message}}.",
   "A personal connection reads and records. It cannot pay anyone.",
+  "`orla fetch` is the agent door: it needs ORLA_AGENT_KEY and pays inside that agent's ceilings.",
 ].join("\n");
