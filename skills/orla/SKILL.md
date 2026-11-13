@@ -187,8 +187,8 @@ https://app.orla.finance/api/mcp/personal
 Claude Code, for example: `claude mcp add --transport http orla https://app.orla.finance/api/mcp/personal`.
 The Claude Code plugin (`/plugin marketplace add cheetah-trade/orla-cli`, then
 `/plugin install orla@orla`) declares that same address and brings this skill
-with four more: sorting uncategorized rows, closing a month, settling up a
-shared space, checking a counterparty. `https://app.orla.finance/api/mcp` is the
+with three more: sorting uncategorized rows, closing a month, settling up a
+shared space. `https://app.orla.finance/api/mcp` is the
 door with both shapes; picking "connect an agent" there mints an agent with a
 budget of its own.
 
