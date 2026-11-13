@@ -11,7 +11,7 @@
     {
       "name": "orla",
       "source": "./",
-      "description": "Five skills for keeping books in Orla: sort uncategorized rows, close a month, settle up a shared space, check a counterparty before paying, and drive the CLI from a terminal. Ships the personal MCP connection they run on."
+      "description": "Four skills for keeping books in Orla: sort uncategorized rows, close a month, settle up a shared space, and drive the CLI from a terminal. Ships the personal MCP connection they run on."
     }
   ]
 }

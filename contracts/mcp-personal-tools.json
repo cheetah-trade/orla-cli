@@ -1,6 +1,14 @@
 {
   "client": "https://github.com/cheetah-trade/orla-cli",
   "door": "personal connection (mcp_personal.PRESET, money tools withheld)",
+  "left": [
+    "orla_find_service",
+    "orla_risk_alerts",
+    "orla_risk_case",
+    "orla_risk_check",
+    "orla_risk_counterparties",
+    "orla_risk_trace"
+  ],
   "tools": [
     {
       "arguments": [
@@ -68,19 +76,6 @@
         "idempotency_key",
         "kind",
         "occurred_on",
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "limit",
-        "q",
-        "space_id"
-      ],
-      "destructive": false,
-      "name": "orla_find_service",
-      "readOnly": true,
-      "required": [
         "space_id"
       ]
     },
@@ -168,68 +163,6 @@
       "readOnly": true,
       "required": [
         "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "space_id"
-      ],
-      "destructive": false,
-      "name": "orla_risk_alerts",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "space_id",
-        "which"
-      ],
-      "destructive": false,
-      "name": "orla_risk_case",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "space_id",
-        "who"
-      ],
-      "destructive": false,
-      "name": "orla_risk_check",
-      "readOnly": true,
-      "required": [
-        "space_id",
-        "who"
-      ]
-    },
-    {
-      "arguments": [
-        "space_id"
-      ],
-      "destructive": false,
-      "name": "orla_risk_counterparties",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "months",
-        "rationale",
-        "space_id",
-        "who"
-      ],
-      "destructive": false,
-      "name": "orla_risk_trace",
-      "readOnly": false,
-      "required": [
-        "space_id",
-        "who"
       ]
     },
     {

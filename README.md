@@ -84,7 +84,7 @@ it was, so a shell script can branch without parsing anything:
 The skill that teaches an agent all of this, including where paying stops, is
 `skills/orla/SKILL.md`. It ships in the package and at
 [orla.finance/skill.md](https://orla.finance/skill.md), and it is one of the
-five skills the Claude Code plugin below installs. Into any other agent:
+four skills the Claude Code plugin below installs. Into any other agent:
 
 ```bash
 npx skills add cheetah-trade/orla-cli --skill orla   # any agent the skills CLI knows
@@ -158,8 +158,8 @@ different door, where an agent gets a budget and a card of its own.
 
 ## As a Claude Code plugin
 
-This repository is also a plugin marketplace. Installing it brings five
-skills, four for keeping the books and one for the CLI itself, and the personal
+This repository is also a plugin marketplace. Installing it brings four
+skills, three for keeping the books and one for the CLI itself, and the personal
 MCP connection they run on:
 
 ```
@@ -176,7 +176,6 @@ flow by hand.
 | `orla-categorize` | Sorts uncategorized rows into categories, in batches you confirm first. |
 | `orla-month-close` | Closes a month: spend, budgets that broke, what is unsorted, what the space is worth, what waits for a signature. Reads only. |
 | `orla-settle-up` | Balances and the settle-up plan in a shared space, and records shared expenses from your own account of a trip. |
-| `orla-counterparty-check` | What a business space knows about a counterparty or address before money goes out. |
 | `orla` | The CLI from a terminal: the exact commands, the JSON envelope and exit codes, and where paying stops. |
 
 The plugin points at `https://app.orla.finance/api/mcp/personal`, which is the
