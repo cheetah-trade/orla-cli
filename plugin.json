@@ -1,0 +1,47 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "orla",
+  "version": "0.3.0",
+  "description": "Your own Orla books in your assistant: read accounts, transactions, budgets and what is flagged, record transactions, sort categories and keep budgets. Five bookkeeping skills on the personal MCP connection. No tool here moves money.",
+  "author": {
+    "name": "Digital Flow Pte. Ltd.",
+    "url": "https://orla.finance"
+  },
+  "homepage": "https://orla.finance/en/mcp",
+  "repository": "https://github.com/cheetah-trade/orla-cli",
+  "license": "MIT",
+  "keywords": [
+    "bookkeeping",
+    "budgets",
+    "personal-finance",
+    "small-business",
+    "crypto",
+    "mcp"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Orla",
+        "shortDescription": "Your own books, read and kept by your assistant",
+        "longDescription": "Orla keeps the books of a person, a household or a small company across bank accounts, cards, exchanges and crypto wallets. This plugin connects your assistant to your own Orla spaces through the personal connection. It reads accounts, transactions, budgets, net worth and fraud findings, records and corrects transactions, sorts categories, sets budget limits and records shared expenses in a shared space. It acts as you, only in the spaces you tick on Orla's consent page, with your permissions. Nothing in it can pay, transfer money or reveal card details: those tools do not exist at this address. The owner of a shared space can leave every connected assistant reading only.",
+        "developerName": "Digital Flow Pte. Ltd.",
+        "category": "Finance",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://orla.finance",
+        "privacyPolicyURL": "https://orla.finance/en/privacy",
+        "termsOfServiceURL": "https://orla.finance/en/terms",
+        "defaultPrompt": [
+          "What did I spend on software last month in Orla?",
+          "Sort my uncategorized Orla transactions from this month.",
+          "Which of my Orla budgets went over this month?"
+        ],
+        "brandColor": "#0B0B0C",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      }
+    }
+  }
+}
