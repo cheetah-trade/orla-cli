@@ -65,6 +65,21 @@ export const sessionExpired = (why: string): CliError =>
 export const noSpaces = (): CliError =>
   new CliError("cli.no_spaces", EXIT.space, "this connection reaches no spaces; re-run `orla login` and tick one");
 
+/** The agent door has no session to lack: what it lacks is the key in the environment. */
+export const noAgentKey = (): CliError =>
+  new CliError(
+    "cli.no_agent_key",
+    EXIT.notConnected,
+    "no agent key: `orla fetch` reads ORLA_AGENT_KEY from the environment (an agent key from Agents in the app)",
+  );
+
+/** Orla refused the key itself, not one command: the same failure as a dead session. */
+export const keyRefused = (code: string, message: string): CliError =>
+  new CliError(code, EXIT.notConnected, `the agent key was refused (${message}); check ORLA_AGENT_KEY`);
+
+export const agentNoSpaces = (): CliError =>
+  new CliError("cli.no_spaces", EXIT.space, "this agent key reaches no spaces; grant it one under Agents in the app");
+
 export const spaceRequired = (choices: { id: string; name: string }[]): CliError =>
   new CliError(
     "cli.space_required",
