@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-15 01:47)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-15 08:22)
 
-Window (UTC): 2026-11-08 00:47:47 – 2026-11-15 00:47:47, every run listed.
+Window (UTC): 2026-11-08 07:22:14 – 2026-11-15 07:22:14, every run listed.
 
 ## CI by workflow
 
@@ -33,4 +33,4 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 ## Pull requests
 
 - Merged, complete UTC days: 1 without bots (0 by bots left out); to merge, bots excluded: median 0.0 h, p90 0.0 h.
-- Open (not drafts): 1; oldest: #14 feat(plugin): тот же плагин для ChatGPT и Codex (владельцу) (46.5 d).
+- Open (not drafts): 1; oldest: #14 feat(plugin): тот же плагин для ChatGPT и Codex (владельцу) (46.7 d).
