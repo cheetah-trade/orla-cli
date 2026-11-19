@@ -81,6 +81,48 @@
     },
     {
       "arguments": [
+        "currency",
+        "idempotency_key",
+        "kind",
+        "name",
+        "opening_balance",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_create_account",
+      "readOnly": false,
+      "required": [
+        "currency",
+        "idempotency_key",
+        "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "accept_balance_break",
+        "accept_holder",
+        "account_id",
+        "document_id",
+        "idempotency_key",
+        "preview_id",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_import_statement",
+      "readOnly": false,
+      "required": [
+        "account_id",
+        "document_id",
+        "idempotency_key",
+        "preview_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "space_id"
       ],
       "destructive": false,
@@ -205,6 +247,22 @@
       "required": [
         "space_id",
         "transaction_ids"
+      ]
+    },
+    {
+      "arguments": [
+        "accept_balance_break",
+        "accept_holder",
+        "account_id",
+        "document_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_preview_statement_import",
+      "readOnly": true,
+      "required": [
+        "document_id",
+        "space_id"
       ]
     },
     {
