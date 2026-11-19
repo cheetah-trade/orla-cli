@@ -84,7 +84,7 @@ it was, so a shell script can branch without parsing anything:
 The skill that teaches an agent all of this, including where paying stops, is
 `skills/orla/SKILL.md`. It ships in the package and at
 [orla.finance/skill.md](https://orla.finance/skill.md), and it is one of the
-four skills the Claude Code plugin below installs. Into any other agent:
+five skills the Claude Code plugin below installs. Into any other agent:
 
 ```bash
 npx skills add cheetah-trade/orla-cli --skill orla   # any agent the skills CLI knows
@@ -158,8 +158,8 @@ different door, where an agent gets a budget and a card of its own.
 
 ## As a Claude Code plugin
 
-This repository is also a plugin marketplace. Installing it brings four
-skills, three for keeping the books and one for the CLI itself, and the personal
+This repository is also a plugin marketplace. Installing it brings five
+skills, four for keeping the books and one for the CLI itself, and the personal
 MCP connection they run on:
 
 ```
@@ -173,9 +173,10 @@ flow by hand.
 
 | Skill | What it does |
 |---|---|
-| `orla-categorize` | Sorts uncategorized rows into categories, in batches you confirm first. |
-| `orla-month-close` | Closes a month: spend, budgets that broke, what is unsorted, what the space is worth, what waits for a signature. Reads only. |
-| `orla-settle-up` | Balances and the settle-up plan in a shared space, and records shared expenses from your own account of a trip. |
+| `orla-categorize` | Sorts out what is still uncategorized: a preview of each batch, your yes, then exactly that batch applied. |
+| `orla-month-close` | Closes a month from Orla's own reports: spend, budgets that broke, what is unsorted, bills due, what the space is worth, what waits for a signature. Reads only. |
+| `orla-settle-up` | Who owes whom: the settle-up plan in a shared space, or what a space owes and is owed from its reports and supplier bills; records shared expenses and keeps the receipts in Documents. |
+| `orla-statement-import` | Books a bank statement: the rows Orla read, your yes, then exactly those rows. When the entry limit leaves room for only part of it, the newest rows go first. |
 | `orla` | The CLI from a terminal: the exact commands, the JSON envelope and exit codes, and where paying stops. |
 
 The plugin points at `https://app.orla.finance/api/mcp/personal`, which is the
@@ -184,8 +185,9 @@ what makes it true rather than a promise: payments, transfers and card details
 are withheld there and refused if asked for by name.
 
 Two things the skills lean on, worth knowing before you read them. A connection
-approved without "show full details" receives payees and addresses masked, which
-limits how much of a bank import can be categorized from four characters. And
+without full payment details (the person switches them on in Orla, under Agents) receives payees
+and addresses masked, which limits how much of a bank import can be categorized
+from four characters. And
 the tool list stops at 200 rows per call, with the true count beside it, so a
 busy month is read month by month rather than in one gulp.
 

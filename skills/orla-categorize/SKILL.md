@@ -1,6 +1,6 @@
 ---
 name: orla-categorize
-description: Sort uncategorized transactions in an Orla space into categories, in reviewed batches. Use when someone asks to categorize, sort, tidy or clean up their transactions, wants to know what is still uncategorized, or says their budgets look empty. Covers the uncategorized filter, what a masked connection can and cannot read, matching the category kind to the transaction kind, and the confirm-then-write loop.
+description: Sort uncategorized transactions in an Orla space into categories, in reviewed batches. Use when someone asks to categorize, sort, tidy or clean up their transactions, wants to know what is still uncategorized, or says their budgets look empty. Covers the uncategorized filter, what a masked connection can and cannot read, matching the category kind to the transaction kind, and the preview-then-apply batch.
 ---
 
 # Sort the uncategorized rows
@@ -9,9 +9,10 @@ Uncategorized rows are why a budget reads zero while money is clearly moving: a
 budget counts what has a category on it. This skill finds those rows, proposes a
 category for each, and writes the accepted ones back.
 
-**You never invent a number here.** `orla_amend_transaction` can change the
-category, the payee and the note. Amount, date and account are not amendable by
-anyone, including the person, because an amount is what actually moved.
+**You never invent a number here.** Two tools write. `orla_recategorize`
+changes categories in batches; `orla_amend_transaction` changes the category,
+payee or note of one row. Amount, date and account cannot be amended by anyone,
+the person included, because an amount is what actually moved.
 
 ## Before anything else
 
@@ -36,7 +37,7 @@ receives payees as `•••• rA3N`. Four characters is not evidence, and a c
 guessed from it is a guess wearing a confident face. When `masked` is true, say
 so in the first message, keep to rows that still carry a readable payee (a bank
 import usually does, an on-chain transfer usually does not), and tell the person
-the fix: reconnect and tick "show full details" on the consent page.
+the fix: the person switches full details on in Orla, under Agents.
 
 **`total` against the rows returned.** The list stops at 200 rows per call and
 reports `total` beside them. More than 200 means narrowing by `date_from` and
@@ -64,10 +65,50 @@ Rows you cannot place go in a short "left alone" list with the reason. A skill
 that quietly assigns "Fees and charges" to everything it could not read has
 destroyed the signal that something needs a human.
 
-## 3. Propose, then write
+## 3. Preview, confirm, apply
 
-Show the batch as a table: payee, how many rows, total amount, proposed
-category, and why. Ask once. Write only what was accepted.
+Many rows into one category is a batch, and a batch goes in two calls with the
+person's yes between them. One group from step 2 (one category) is one batch.
+
+```
+orla_preview_recategorize(space_id, transaction_ids, category_id)
+```
+
+The preview writes nothing. It answers with the rows that would move (from which
+category to which), the rows that would stay and why (not found, in a closed
+month, a category of the other direction, a transfer, already in that category),
+a `preview_id`, and `may_execute`. When `may_execute` is false, `why_not` says
+why: read it to the person and stop there.
+
+Show the person the rows that would move and the ones that stay, and ask once.
+Then, on their yes:
+
+```
+orla_recategorize(
+  space_id, transaction_ids, category_id, preview_id,
+  idempotency_key: "<one key per batch>"
+)
+```
+
+Same `transaction_ids`, same category, the `preview_id` from the preview. It
+moves exactly the rows the preview listed as changing, all together or none.
+Three rules hold it honest:
+
+- **Never widen a batch after the yes.** A row added between preview and apply
+  is a row the person never saw, and the server refuses the mismatch anyway.
+- **A preview lasts 15 minutes and holds up to 200 rows.** If a row changed
+  since, or the preview expired, nothing is written and the answer says which.
+  Preview again and show the new list; do not retry the old one.
+- **The key is per batch, reused on retry.** A call that may already have
+  landed is retried with the **same** key, which keeps a retry from applying
+  the batch twice. A fresh key is a new batch.
+
+A batch counts as one entry against the space's 200 recorded entries in any 24
+hours, so sorting in batches is also what keeps a long backlog inside the limit.
+The space's trail records the batch as one line, and a person can put the whole
+batch back from there.
+
+For a single row, `orla_amend_transaction` is enough:
 
 ```
 orla_amend_transaction(
@@ -76,29 +117,21 @@ orla_amend_transaction(
 )
 ```
 
-The key is per intended change, not per session and not per retry. A call that
-may already have landed is retried with the **same** key, which is what keeps a
-retry from becoming a second edit. A fresh key on a retry is a second edit.
-
-One call per row: the tool takes a single `transaction_id`. Write them in a
-loop, count what succeeded, and report failures by row rather than abandoning
-the batch.
-
 Read the answer rather than assuming it. A write comes back as
 `{"applied": true, "proposal_id": null, "result": {...}}`, and `applied` is the
 field that says it landed. A `proposal_id` beside it means the change was queued
-for a person to approve instead of being written, which happens on connections
-that run under review. Reporting "done" on a queued change is a lie the person
-finds out about later.
+for a person to approve instead of being written. Reporting "done" on a queued
+change is a lie the person finds out about later.
 
-A category from the wrong direction is refused by the server, not silently
-accepted. The refusal reads roughly *"This category is for the other direction:
-pick an income category for income and a spending category for spending"*, and
-the wording is the server's to change: show the sentence you were given, fix the
-pairing and retry the row, rather than swallowing it and reporting a smaller
-number with no explanation.
+A refusal comes back in words, and the wording is the server's to change. Show
+the person the sentence you were given rather than swallowing it and reporting
+a smaller number with no explanation. Retry only when it names a wrong pairing
+of category and row, and fix that one pairing. For any other refusal (a closed
+month, access, the daily limit) stop and tell the person. Do not route around it
+through another tool.
 
-To undo, amend again with `clear_category: true`.
+To undo one row, amend it again with `clear_category: true`. To undo a batch,
+the person puts it back from the space's trail in Orla.
 
 ## 4. Report what changed
 
