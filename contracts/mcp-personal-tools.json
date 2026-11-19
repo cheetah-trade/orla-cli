@@ -81,6 +81,26 @@
     },
     {
       "arguments": [
+        "currency",
+        "idempotency_key",
+        "kind",
+        "name",
+        "opening_balance",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_create_account",
+      "readOnly": false,
+      "required": [
+        "currency",
+        "idempotency_key",
+        "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "space_id"
       ],
       "destructive": false,
