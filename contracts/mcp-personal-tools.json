@@ -348,7 +348,6 @@
         "filename",
         "idempotency_key",
         "rationale",
-        "read_statement",
         "space_id"
       ],
       "destructive": false,
