@@ -92,6 +92,22 @@
     },
     {
       "arguments": [
+        "due",
+        "limit",
+        "offset",
+        "q",
+        "space_id",
+        "status"
+      ],
+      "destructive": false,
+      "name": "orla_list_bills",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "by_member",
         "month",
         "space_id"
@@ -120,6 +136,17 @@
       ],
       "destructive": false,
       "name": "orla_list_payments",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_reports",
       "readOnly": true,
       "required": [
         "space_id"
@@ -167,6 +194,68 @@
     },
     {
       "arguments": [
+        "category_id",
+        "clear_category",
+        "space_id",
+        "transaction_ids"
+      ],
+      "destructive": false,
+      "name": "orla_preview_recategorize",
+      "readOnly": true,
+      "required": [
+        "space_id",
+        "transaction_ids"
+      ]
+    },
+    {
+      "arguments": [
+        "bill_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_read_bill",
+      "readOnly": true,
+      "required": [
+        "bill_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "arguments",
+        "name",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_read_report",
+      "readOnly": true,
+      "required": [
+        "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "category_id",
+        "clear_category",
+        "idempotency_key",
+        "preview_id",
+        "rationale",
+        "space_id",
+        "transaction_ids"
+      ],
+      "destructive": true,
+      "name": "orla_recategorize",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "preview_id",
+        "space_id",
+        "transaction_ids"
+      ]
+    },
+    {
+      "arguments": [
         "amount",
         "budget_id",
         "idempotency_key",
@@ -191,6 +280,25 @@
       "name": "orla_split_balances",
       "readOnly": true,
       "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "content_base64",
+        "content_type",
+        "filename",
+        "idempotency_key",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_upload_document",
+      "readOnly": false,
+      "required": [
+        "content_base64",
+        "filename",
+        "idempotency_key",
         "space_id"
       ]
     },
