@@ -239,7 +239,9 @@ Rules every write here keeps:
 - `orla_import_statement` books exactly the rows its preview listed as new,
   within 15 minutes, or nothing. A statement longer than the room left books its newest rows that fit; the preview says how many wait and when room comes back.
 - `orla_upload_document` takes one file, base64, 180 KB at most. It books
-  nothing, pays nothing and creates no bill.
+  nothing, pays nothing and creates no bill. For a bank statement to book,
+  pass `read_statement: true`: Orla reads the file once, from the space's AI
+  allowance, and the statement preview works from that reading.
 - A refusal comes in words. Tell the person what it says; do not route around
   it through another tool, and do not suggest buying a plan.
 
