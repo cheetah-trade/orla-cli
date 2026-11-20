@@ -22,6 +22,7 @@ export const COMMANDS: Command[] = [
   { name: "tx list", summary: "transactions (--from --to --search --account --limit up to 200)" },
   { name: "tx add", summary: "record one (--account --kind --amount --date [--payee --note])" },
   { name: "export", summary: "every matching row as CSV on stdout (--from --to --search --account --limit)" },
+  { name: "feedback", args: "<bug|idea|problem> \"text\"", summary: "tell the Orla team, after showing the text (--yes for scripts, --space optional)" },
   { name: "tools", summary: "which tools this connection is given" },
   { name: "mcp", args: "[--api URL]", summary: "stdio bridge, for clients that cannot speak HTTP" },
   { name: "version", summary: "which version this is" },

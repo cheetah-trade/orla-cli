@@ -253,3 +253,48 @@ export async function txAdd(
     `booked ${input.amount} ${input.payee ?? ""} ${id && `(${id})`}`.replace(/\s+/g, " ").trim() + "\n",
   );
 }
+
+/** What `orla feedback` may send. `tool_error` is the AI client's own report and has no command. */
+export const FEEDBACK_KINDS = ["bug", "idea", "problem"] as const;
+export type FeedbackKind = (typeof FEEDBACK_KINDS)[number];
+/** The server's bounds on the text (`orla_send_feedback`), checked here before any request. */
+const FEEDBACK_MIN = 3;
+const FEEDBACK_MAX = 4000;
+
+export function isFeedbackKind(kind: string | undefined): kind is FeedbackKind {
+  return (FEEDBACK_KINDS as readonly string[]).includes(kind ?? "");
+}
+
+/**
+ * Send a bug, a problem or an idea to the Orla team, after the person has seen
+ * it. The text goes to people, so it is shown before it leaves: a terminal is
+ * asked, and without one only `--yes` sends, because a script that hangs on a
+ * question it cannot see is worse than one told what to pass.
+ */
+export async function feedback(
+  kind: FeedbackKind,
+  text: string,
+  options: { spaceId?: string; yes: boolean; json: boolean },
+  ask: (question: string) => Promise<boolean>,
+): Promise<void> {
+  const words = text.trim();
+  if (words.length < FEEDBACK_MIN || words.length > FEEDBACK_MAX) {
+    throw usage(`the text is ${FEEDBACK_MIN} to ${FEEDBACK_MAX} characters, got ${words.length}`);
+  }
+  if (!options.yes) {
+    if (!process.stdin.isTTY) throw usage("not a terminal to ask in: pass --yes to send without the question");
+    process.stderr.write(`To the Orla team, as ${kind}:\n\n${words}\n\n`);
+    if (!(await ask("Send this? [y/N] "))) {
+      if (options.json) return printJson({ sent: false });
+      process.stderr.write("not sent\n");
+      return;
+    }
+  }
+  const args: Record<string, unknown> = { kind, text: words };
+  if (options.spaceId) args["space_id"] = options.spaceId;
+  const answer = (await callTool("orla_send_feedback", args)) as Row;
+  if (options.json) return printJson(answer);
+  process.stderr.write(
+    answer["already_sent"] ? "already sent a moment ago; not sent twice\n" : "sent to the Orla team, thank you\n",
+  );
+}
