@@ -10,6 +10,11 @@
   `--json` carries `revoked` and, when false, `reason` and `detail`. The
   endpoint is used only on the session's own origin.
 - `release.yml` runs the test suite before it publishes.
+- `orla export` no longer loses rows when Orla cuts a page to fit its size
+  ceiling. The next page starts where the last one ended
+  (`answer_truncated.next_offset` when Orla names it, else after the rows
+  that came back), and a cut page is not taken for the last one: the walk
+  goes on to `total`.
 
 ## 0.5.1
 

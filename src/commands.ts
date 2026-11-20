@@ -123,9 +123,16 @@ export type TxFilter = {
  */
 export const PAGE = 200;
 
-type TxPage = { items?: Row[]; transactions?: Row[]; total?: number };
+type TxPage = {
+  items?: Row[];
+  transactions?: Row[];
+  total?: number;
+  answer_truncated?: { next_offset?: number };
+};
 
-async function fetchPage(filter: TxFilter, offset: number, limit: number): Promise<{ rows: Row[]; total?: number }> {
+type Page = { rows: Row[]; total?: number; truncated: boolean; nextOffset?: number };
+
+async function fetchPage(filter: TxFilter, offset: number, limit: number): Promise<Page> {
   const data = (await callTool("orla_list_transactions", {
     space_id: filter.spaceId,
     date_from: filter.from,
@@ -135,16 +142,26 @@ async function fetchPage(filter: TxFilter, offset: number, limit: number): Promi
     limit,
     offset,
   })) as TxPage;
-  return { rows: data.items ?? data.transactions ?? [], total: data.total };
+  const cut = data.answer_truncated;
+  const next = cut?.next_offset;
+  return {
+    rows: data.items ?? data.transactions ?? [],
+    total: data.total,
+    truncated: cut !== undefined && cut !== null,
+    nextOffset: typeof next === "number" && Number.isInteger(next) && next > offset ? next : undefined,
+  };
 }
 
 /**
  * Every row the filters match, a page of `PAGE` at a time.
  *
  * Until 0.5.1 `orla export` asked for 500 rows in one call, the server's
- * ceiling is 200, and every export ended in a refusal. A page shorter than
- * asked for is the last one; `total` is a second stop, so a server that
- * echoes a smaller window than requested is not walked forever.
+ * ceiling is 200, and every export ended in a refusal. The next page starts
+ * where this one actually ended: at `answer_truncated.next_offset` when Orla
+ * names it, else after the rows that came back, never at offset + limit. A
+ * page Orla cut to fit its size ceiling is short without being the last, so
+ * the walk goes on to `total`; only an uncut short page, or an empty one,
+ * ends it when there is no total.
  */
 async function fetchTransactions(filter: TxFilter): Promise<Row[]> {
   const rows: Row[] = [];
@@ -155,9 +172,14 @@ async function fetchTransactions(filter: TxFilter): Promise<Row[]> {
     const want = Math.min(PAGE, remaining);
     const page = await fetchPage(filter, offset, want);
     rows.push(...page.rows);
-    offset += page.rows.length;
-    if (page.rows.length < want) break;
-    if (page.total !== undefined && offset >= page.total) break;
+    // nothing came back: going on would ask for the same window forever
+    if (page.rows.length === 0) break;
+    offset = page.nextOffset ?? offset + page.rows.length;
+    if (page.total !== undefined) {
+      if (offset >= page.total) break;
+    } else if (page.rows.length < want && !page.truncated) {
+      break;
+    }
   }
   return rows;
 }
