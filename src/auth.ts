@@ -270,3 +270,96 @@ export async function accessToken(): Promise<{ token: string; session: Session }
     return { token: refreshed.accessToken, session: refreshed };
   });
 }
+
+/**
+ * What `orla logout` managed on Orla's side, besides forgetting the session here.
+ *
+ * `revoked: false` is not a failure of the command: the local copy is gone
+ * either way. It is said out loud because the one reason to log out in a hurry
+ * is a token that left this machine, and a copy elsewhere outlives a local
+ * delete for as long as the refresh token lives (30 or 60 days).
+ */
+export type Revocation =
+  | { revoked: true }
+  | { revoked: false; reason: "not_offered" | "refused" | "unreachable"; detail: string };
+
+const REVOKE_TIMEOUT_MS = 10_000;
+
+/**
+ * Where this Orla takes revocations (RFC 7009), from its RFC 8414 metadata.
+ *
+ * The OpenID alias is tried second for the reason the server gives for serving
+ * it: on a deployment mounted under a path prefix it is the one that is found by
+ * appending to the issuer. An endpoint on a different origin from the session's
+ * is refused, because the request carries the refresh token and a metadata
+ * document is not a reason to send that anywhere else.
+ */
+async function revocationEndpoint(apiBase: string): Promise<string | null> {
+  for (const doc of ["oauth-authorization-server", "openid-configuration"]) {
+    let res: Response;
+    try {
+      res = await fetch(`${apiBase}/.well-known/${doc}`, { signal: AbortSignal.timeout(REVOKE_TIMEOUT_MS) });
+    } catch {
+      throw unreachable(`cannot reach ${apiBase}`);
+    }
+    if (!res.ok) continue;
+    const meta = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    const endpoint = meta["revocation_endpoint"];
+    if (typeof endpoint !== "string" || !endpoint) return null;
+    let url: URL;
+    try {
+      url = new URL(endpoint);
+    } catch {
+      return null;
+    }
+    return url.origin === new URL(apiBase).origin ? url.toString() : null;
+  }
+  return null;
+}
+
+/**
+ * Ask Orla to end this connection (RFC 7009), before the session is forgotten.
+ *
+ * The refresh token is the one sent: Orla ends every token of this client's
+ * chain on it, and only this client's, so the person's other connections
+ * (Claude, another machine) keep working. Never throws: whatever happens here,
+ * the caller still clears the local copy.
+ */
+export async function revoke(session: Session): Promise<Revocation> {
+  const token = session.refreshToken || session.accessToken;
+  let endpoint: string | null;
+  try {
+    endpoint = await revocationEndpoint(session.apiBase);
+  } catch (err) {
+    return { revoked: false, reason: "unreachable", detail: (err as Error).message };
+  }
+  if (!endpoint) {
+    return {
+      revoked: false,
+      reason: "not_offered",
+      detail: `${new URL(session.apiBase).host} offers no revocation endpoint`,
+    };
+  }
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        token,
+        token_type_hint: session.refreshToken ? "refresh_token" : "access_token",
+        client_id: CLIENT_ID,
+      }).toString(),
+      signal: AbortSignal.timeout(REVOKE_TIMEOUT_MS),
+    });
+  } catch (err) {
+    const why = err instanceof Error && err.cause instanceof Error ? err.cause.message : (err as Error)?.message;
+    return { revoked: false, reason: "unreachable", detail: `cannot reach ${new URL(endpoint).host} (${why})` };
+  }
+  // RFC 7009 2.2: 200 whether or not the token was still alive, so 200 is the
+  // only answer that means "nothing honours it any more".
+  if (res.ok) return { revoked: true };
+  const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  const why = String(body["error_description"] ?? body["error"] ?? `revocation endpoint said ${res.status}`);
+  return { revoked: false, reason: "refused", detail: why };
+}

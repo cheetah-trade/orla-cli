@@ -22,6 +22,21 @@ entry. They are expected to agree, and CI refuses a tag that disagrees with
 3. **Turn on private vulnerability reporting** in the repository's Security
    settings, so `SECURITY.md` points somewhere that works.
 
+4. **Protect what a release is made from.** The package runs through `npx`
+   with a token to somebody's books, so a release must not be one push away:
+   - a ruleset on `main`: no deletion, no force push, changes through a pull
+     request, required checks `check` and `signed-off`;
+   - a ruleset on tags `v*`: only a repository admin creates them, nobody
+     moves or deletes them;
+   - the environment `npm-publish` (Settings, Environments) with a required
+     reviewer and deployments limited to tags `v*`; on npmjs.com, name that
+     environment in the trusted publisher too, so a publish from anywhere
+     else is refused by npm itself;
+   - Dependabot security updates on (Settings, Code security).
+
+   `release.yml` also refuses a tag whose commit is not on `main`, and runs
+   the whole test suite before it publishes.
+
 ## Cutting a release
 
 ```bash
@@ -29,8 +44,9 @@ npm version patch          # or minor
 git push --follow-tags
 ```
 
-The tag starts `release.yml`, which typechecks, builds, verifies the tag
-against the manifest and publishes. Nothing is published from a laptop after
+The tag starts `release.yml`, which checks the tagged commit is on `main`,
+typechecks, runs the tests, verifies the tag against the manifest, waits for
+the `npm-publish` reviewer and publishes. Nothing is published from a laptop after
 the first time.
 
 ## The MCP registry entry

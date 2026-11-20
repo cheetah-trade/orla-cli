@@ -42,7 +42,7 @@ re-pointed by an update.
 | Command | What it does |
 |---|---|
 | `orla login [--api URL] [--agent]` | Connect this machine. Opens a browser. `--agent` asks for the door where a bot can be minted. |
-| `orla logout` | Forget the stored session. |
+| `orla logout` | Revoke the connection on Orla, then forget the stored session. |
 | `orla whoami` | Which connection this is and which spaces it reaches. |
 | `orla spaces` | The spaces in reach. |
 | `orla use <space-id>` | Remember one as the default. |
@@ -201,7 +201,12 @@ exists it falls back to a `0600` file under your config directory and says so
 on stderr, because a refresh token quietly landing on disk is not something to
 discover later.
 
-`orla logout` clears both.
+`orla logout` clears both. Before that it asks Orla to revoke the connection
+(RFC 7009, at the `revocation_endpoint` Orla's OAuth metadata names), which
+ends this client's tokens on the server and leaves your other connections
+alone. When Orla offers no revocation endpoint or cannot be reached, the
+session is still forgotten here and the CLI says it was forgotten on this
+machine only.
 
 ## Development
 

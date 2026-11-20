@@ -55,7 +55,7 @@ transactions`, no `orla tx remove`, no `orla space`.
 | Command | What it does | Flags |
 |---|---|---|
 | `orla login` | connect this machine (opens a browser) | `--api URL`, `--agent` |
-| `orla logout` | forget the stored session | |
+| `orla logout` | revoke the connection on Orla and forget the stored session | |
 | `orla whoami` | who this connection is, and what it reaches | |
 | `orla spaces` | the spaces in reach | |
 | `orla use <space-id>` | remember a space as the default | positional id, not `--space` |

@@ -31,7 +31,7 @@ const ledger = (n) =>
   }));
 
 /** A server holding `rows`, answering tool calls the way the personal door does. */
-function orla(rows) {
+function orla(rows, { cutTo, nextOffset = false } = {}) {
   const calls = [];
   const server = createServer((req, res) => {
     let body = "";
@@ -56,7 +56,17 @@ function orla(rows) {
             },
           };
         } else {
-          out = answer({ items: rows.slice(offset, offset + limit), total: rows.length, limit, offset });
+          let items = rows.slice(offset, offset + limit);
+          const data = { total: rows.length, limit, offset };
+          // Orla's size ceiling (`mcp_answer_caps.fit`) cuts a wide page short
+          // and says so; the cut page is not the last one.
+          if (cutTo !== undefined && items.length > cutTo) {
+            const returned = items.length;
+            items = items.slice(0, cutTo);
+            data.answer_truncated = { reason: "too big", lists: [{ path: "items", returned: cutTo, total: returned }] };
+            if (nextOffset) data.answer_truncated.next_offset = offset + cutTo;
+          }
+          out = answer({ items, ...data });
         }
       } else if (params?.name === "orla_list_accounts") {
         out = answer({ accounts: [{ id: "acc-1", name: "Card" }] });
@@ -94,8 +104,8 @@ function run(args, api) {
   });
 }
 
-async function against(rows, args) {
-  const { calls, server } = orla(rows);
+async function against(rows, args, shape) {
+  const { calls, server } = orla(rows, shape);
   await new Promise((ready) => server.listen(0, "127.0.0.1", ready));
   try {
     const out = await run(args, `http://127.0.0.1:${server.address().port}`);
@@ -175,3 +185,19 @@ test("a --limit that is not a whole number is refused before any request", async
     strictEqual(pages.length, 0);
   }
 });
+
+for (const nextOffset of [false, true]) {
+  test(`a page cut short by the size ceiling is not the end (next_offset ${nextOffset ? "named" : "absent"})`, async () => {
+    const { code, stdout, pages } = await against(ledger(450), ["export", "--json"], { cutTo: 90, nextOffset });
+    strictEqual(code, 0);
+    const ids = JSON.parse(stdout).data.map((r) => r.id);
+    strictEqual(ids.length, 450, "every row, none lost to the cut");
+    strictEqual(new Set(ids).size, 450, "and none twice");
+    deepStrictEqual(ids, ledger(450).map((r) => r.id), "in order");
+    deepStrictEqual(
+      pages.map((p) => p.offset),
+      [0, 90, 180, 270, 360],
+      "each page starts where the last one ended, not at offset + limit",
+    );
+  });
+}

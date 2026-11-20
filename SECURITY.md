@@ -24,4 +24,10 @@ A personal connection reads and records. The tools that move money are not in
 the list it is given, and are refused at the endpoint if asked for by name, so
 a compromised or modified client cannot pay anybody. A stolen refresh token
 reads books and can write bookkeeping entries. Revoke it in the app under
-Agents, or run `orla logout` on the machine that holds it.
+Agents: that works from anywhere and always.
+
+`orla logout` on the machine that holds the token also ends it on Orla's side
+when the Orla it talks to offers token revocation (RFC 7009), and says
+"revoked on Orla" when it did. When it says "forgotten on this machine only",
+the server was not told and any copy of the token keeps working until you
+revoke it in the app.
