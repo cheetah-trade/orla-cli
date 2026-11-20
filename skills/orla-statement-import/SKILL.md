@@ -37,17 +37,21 @@ orla_create_account(
 
 Leave `opening_balance` out unless the person tells you the balance from before
 the first row of this statement. Do not read it off the paper yourself and
-guess. A name the space already uses is refused; if that account has the statement's currency, use it, otherwise ask the person for another name.
+guess: for a bank account with no opening balance, the preview offers the
+statement's own (step 2). A name the space already uses is refused; if that account has the statement's currency, use it, otherwise ask the person for another name.
 
 Then hand in the file:
 
 ```
 orla_upload_document(
   space_id, filename: "statement-2026-10.pdf", content_type: "application/pdf",
-  content_base64: "<the file>", idempotency_key: "<one key per file>"
+  content_base64: "<the file>", read_statement: true,
+  idempotency_key: "<one key per file>"
 )                                 -> document_id
 ```
 
+`read_statement: true` asks Orla to read the file as a bank statement, once, from
+the space's AI allowance; the person's yes to handing the statement in covers it.
 One file per call, 180 KB at most. For a larger file, the person imports the statement in Orla; this connection cannot book it. The upload alone books nothing.
 
 ## 2. Preview: nothing is written
@@ -75,6 +79,11 @@ in `rows`, and in `not_booking` each row that would not be, with its reason:
 | `closed_month` | dated inside a closed month, which no import writes into |
 | `read_twice` | the statement's own balances show this line was read twice |
 | `over_limit` | no room for it now under the entry limit (below) |
+
+For a bank account with no opening balance yet, `opening_balance` is the balance
+the statement starts from: booking sets it on the account, so show it with the
+rows. It is null when Orla takes none: the account is not a bank or already has one, its book starts before this
+statement, or the balances do not add up.
 
 It also returns a `preview_id` and `may_execute`. When `may_execute` is false,
 `why_not` says why in words. Two of those reasons ask the person a question:
