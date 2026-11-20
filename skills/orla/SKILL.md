@@ -63,6 +63,7 @@ transactions`, no `orla tx remove`, no `orla space`.
 | `orla tx list` | transactions | `--from --to --search --account --limit --space` |
 | `orla tx add` | record one transaction | `--account --amount` required; `--kind --date --payee --note` optional; `--space` |
 | `orla export` | the same rows as CSV on stdout | the `tx list` filters; limit defaults to 500 |
+| `orla feedback <bug\|idea\|problem> "text"` | send a bug, a problem or an idea to the Orla team | asks before sending; `--yes` sends without asking (required without a terminal); `--space` optional |
 | `orla tools` | which tools this connection is given | |
 | `orla mcp` | stdio bridge, for clients that cannot speak HTTP | `--api URL` |
 | `orla version` | which version this is | |
@@ -84,6 +85,11 @@ Pairs that get confused:
 - Dates are `YYYY-MM-DD`. Amounts are strings: an expense is `--amount 58.00`
   with `--kind expense` (the default); an income is `--kind income`. Do not
   pass a negative amount to mean an expense.
+- `orla feedback` writes nothing in the books: it sends the person's words to
+  the people who build Orla, and they may answer by email. Pass `--yes` only
+  when the person has already seen and approved the exact text. Five reports
+  an hour per person; the same text twice within ten minutes is sent once
+  (`data.already_sent`).
 - `orla logout` is the only command that forgets a session. `orla login` on a
   connected machine replaces the session rather than adding one.
 

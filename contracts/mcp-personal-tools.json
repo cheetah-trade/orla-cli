@@ -314,6 +314,23 @@
     },
     {
       "arguments": [
+        "error_code",
+        "kind",
+        "rationale",
+        "space_id",
+        "text",
+        "tool_name"
+      ],
+      "destructive": false,
+      "name": "orla_send_feedback",
+      "readOnly": false,
+      "required": [
+        "kind",
+        "text"
+      ]
+    },
+    {
+      "arguments": [
         "amount",
         "budget_id",
         "idempotency_key",

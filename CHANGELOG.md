@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- `orla feedback <bug|idea|problem> "text"` sends a bug, a problem or an idea
+  to the Orla team through the personal door's new `orla_send_feedback` tool.
+  It shows the text and asks before sending; `--yes` sends without the
+  question, and without a terminal it is required (exit 2 otherwise).
+  `--space <id>` names the space the report is about. Nothing in the books
+  changes; Orla allows five reports an hour per person across all its ways of
+  reporting, and the same text sent again within ten minutes is sent once
+  (`data.already_sent` with `--json`).
+- `contracts/mcp-personal-tools.json` follows Orla's personal door: 24 tools
+  with `orla_send_feedback`.
+
 ## 0.5.2
 
 - `orla logout` revokes the connection on Orla before it forgets the session

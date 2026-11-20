@@ -8,12 +8,15 @@
  */
 
 import { readFileSync } from "node:fs";
+import { createInterface } from "node:readline/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { DEFAULT_API, login, revoke } from "./auth.js";
 import {
   accounts,
+  feedback,
+  isFeedbackKind,
   PAGE,
   parseLimit,
   printFailure,
@@ -118,6 +121,20 @@ async function run(argv: string[]): Promise<void> {
     return;
   }
 
+  if (command === "feedback") {
+    // `--yes "text"` would otherwise read the text as the flag's value
+    if (typeof flags["yes"] === "string") {
+      words.push(flags["yes"]);
+      flags["yes"] = true;
+    }
+    const kind = words[1];
+    const text = words.slice(2).join(" ");
+    if (!isFeedbackKind(kind) || !text.trim()) throw usage('orla feedback <bug|idea|problem> "text" [--yes] [--space <id>]');
+    // no default space here: a report names a space only when the person does
+    await feedback(kind, text, { spaceId: optional(flags, "space"), yes: flags["yes"] === true, json }, confirm);
+    return;
+  }
+
   if (command === "tools") {
     const tools = await listTools();
     if (json) return printJson(tools);
@@ -182,6 +199,15 @@ function filterFrom(spaceId: string, flags: Flags, limit: number | undefined) {
     account: optional(flags, "account"),
     limit,
   };
+}
+
+async function confirm(question: string): Promise<boolean> {
+  const rl = createInterface({ input: process.stdin, output: process.stderr });
+  try {
+    return /^y(es)?$/i.test((await rl.question(question)).trim());
+  } finally {
+    rl.close();
+  }
 }
 
 async function whoamiSummary(): Promise<void> {

@@ -50,6 +50,7 @@ re-pointed by an update.
 | `orla tx list` | Transactions. `--from --to --search --account --limit` (50 by default, at most 200). |
 | `orla tx add` | Record one. `--account --kind --amount --date [--payee --note]`. |
 | `orla export` | Every matching row as CSV on stdout, read 200 at a time. `--limit` stops early. |
+| `orla feedback <bug\|idea\|problem> "text"` | Tell the Orla team about a bug, a problem or an idea. Shows the text and asks first; `--yes` sends without asking (scripts), `--space <id>` names the space it is about. Nothing in the books changes. |
 | `orla tools` | Which tools this connection was given. |
 | `orla mcp [--api URL]` | stdio bridge (below). |
 | `orla version` | Which version this is. |
