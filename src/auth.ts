@@ -25,6 +25,7 @@ import { platform } from "node:os";
 
 import { cancelled, notConnected, refused, sessionExpired, timedOut, unreachable } from "./errors.js";
 import { load, save, withRefreshLock, type Session } from "./store.js";
+import { debug, userAgent } from "./version.js";
 
 //: The API's own origin, behind the `/api` ingress prefix — not the app's.
 //: `app.orla.finance/oauth/authorize` is the frontend's 404 page.
@@ -195,9 +196,23 @@ export async function reach(url: string, init: RequestInit, timeoutMs: number = 
       return url;
     }
   })();
+  const started = Date.now();
+  const where = (() => {
+    try {
+      const u = new URL(url);
+      return `${u.host}${u.pathname}`;
+    } catch {
+      return host;
+    }
+  })();
   try {
-    return await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+    const headers = new Headers(init.headers);
+    headers.set("user-agent", userAgent());
+    const res = await fetch(url, { ...init, headers, signal: AbortSignal.timeout(timeoutMs) });
+    debug(`${init.method ?? "GET"} ${where} -> ${res.status} in ${Date.now() - started} ms`);
+    return res;
   } catch (err) {
+    debug(`${init.method ?? "GET"} ${where} -> ${(err as Error)?.name ?? "error"} after ${Date.now() - started} ms`);
     if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
       throw timedOut(
         `${host} did not answer within ${Math.round(timeoutMs / 1000)} s; ` +
@@ -369,7 +384,10 @@ async function revocationEndpoint(apiBase: string): Promise<string | null> {
   for (const doc of ["oauth-authorization-server", "openid-configuration"]) {
     let res: Response;
     try {
-      res = await fetch(`${apiBase}/.well-known/${doc}`, { signal: AbortSignal.timeout(REVOKE_TIMEOUT_MS) });
+      res = await fetch(`${apiBase}/.well-known/${doc}`, {
+        headers: { "user-agent": userAgent() },
+        signal: AbortSignal.timeout(REVOKE_TIMEOUT_MS),
+      });
     } catch {
       throw unreachable(`cannot reach ${apiBase}`);
     }
@@ -415,7 +433,7 @@ export async function revoke(session: Session): Promise<Revocation> {
   try {
     res = await fetch(endpoint, {
       method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
+      headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": userAgent() },
       body: new URLSearchParams({
         token,
         token_type_hint: session.refreshToken ? "refresh_token" : "access_token",

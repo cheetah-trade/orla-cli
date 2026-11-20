@@ -13,14 +13,12 @@
  * not locked out of the product.
  */
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";
-import { fileURLToPath } from "node:url";
 
 import { accessToken, DEFAULT_API, doorPath, login, reach, requestTimeoutMs } from "./auth.js";
 import { badAnswer, describe, doorClosed, rateLimited, refused, sessionExpired } from "./errors.js";
 import { clear, load } from "./store.js";
+import { version } from "./version.js";
 
 export const PROTOCOL_VERSION = "2026-07-28";
 
@@ -130,11 +128,6 @@ export async function listTools(): Promise<{ name: string; description?: string 
   return result?.tools ?? [];
 }
 
-function version(): string {
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { version?: string };
-  return manifest.version ?? "unknown";
-}
 
 const line = (value: unknown): void => {
   process.stdout.write(`${JSON.stringify(value)}\n`);

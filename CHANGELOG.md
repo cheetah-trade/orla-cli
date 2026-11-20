@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Every request to Orla says who sent it: `User-Agent: orla-cli/<version>
+  (node <version>; <platform>)`. `ORLA_DEBUG=1` prints one stderr line per
+  request (method, host and path, status, time), never a header, a body or a
+  query string.
+
 - The CLI and the bridge read the door's HTTP status. A 401 refreshes the
   token once and repeats the call; a second 401 is `cli.session_expired`
   (exit 3, and the bridge signs in again) instead of "Orla refused the call"

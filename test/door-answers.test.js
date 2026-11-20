@@ -306,3 +306,23 @@ test("a sign-in whose browser never comes back gives up and frees its port", asy
     stub.close();
   }
 });
+
+test("every request names orla-cli and its version; ORLA_DEBUG says what went where, without the token", async () => {
+  const agents = [];
+  const stub = await stubOrla((rpc, req) => {
+    agents.push(req.headers["user-agent"]);
+    return whoami(rpc);
+  });
+  try {
+    const { home, env } = isolated({ ORLA_DEBUG: "1" });
+    withSession(home, stub.apiBase, "SECRET-ACCESS");
+    const { code, err } = await orla(["whoami", "--json"], env);
+    strictEqual(code, 0);
+    const pkg = JSON.parse(readFileSync(resolve(dirname(CLI), "../package.json"), "utf8"));
+    match(agents[0], new RegExp(`^orla-cli/${pkg.version.replaceAll(".", "\\.")} \\(node `));
+    match(err, /orla debug: POST 127\.0\.0\.1:\d+\/mcp\/personal -> 200 in \d+ ms/);
+    ok(!err.includes("SECRET-ACCESS"), "the token never reaches the debug line");
+  } finally {
+    stub.close();
+  }
+});

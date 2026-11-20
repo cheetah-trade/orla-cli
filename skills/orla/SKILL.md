@@ -280,6 +280,7 @@ Orla. A name the space already uses is refused; use that account instead. The pe
 | Variable | Effect |
 |---|---|
 | `ORLA_NO_BROWSER=1` | never launch a browser; the sign-in URL is printed on stderr instead |
+| `ORLA_DEBUG=1` | one stderr line per request to Orla: method, host and path, status, time; never a header, body or query |
 | `ORLA_REQUEST_TIMEOUT_MS` | how long one request to Orla may take, in milliseconds (default 60000; a file upload or statement import gets twice that) |
 | `ORLA_SIGN_IN_WAIT_MS` | how long a sign-in waits for the browser to come back, in milliseconds (default 300000, five minutes) |
 | `ORLA_NO_KEYCHAIN=1` | keep the session in a `0600` file instead of the OS keychain (tests, CI, headless boxes) |
