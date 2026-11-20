@@ -98,7 +98,9 @@ function keychainWrite(value: string): boolean {
         input: value,
         stdio: ["pipe", "ignore", "ignore"],
       });
-      return true;
+      // read back for the same reason as on macOS: a locked or absent
+      // collection can take the call and keep nothing
+      return keychainRead() === value;
     }
   } catch {
     return false;

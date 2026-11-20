@@ -41,6 +41,8 @@ jobs:
       run:
         shell: bash
     steps:
+      # the tests read the skills and the manifest line by line, as shipped (LF)
+      - run: git config --global core.autocrlf false
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:

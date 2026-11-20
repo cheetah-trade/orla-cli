@@ -73,7 +73,8 @@ test("the plugin lists this skill among the others and ships it in the package",
   ok(SKILL.includes(`${DEFAULT_API}/mcp/personal`), "the skill sends a personal connection to the personal door");
 });
 
-test("the Claude Desktop bundle is a zip with a manifest built from package.json", () => {
+// The bundle is built on Linux (ci.yml `check`, release.yml), where `zip` is.
+test("the Claude Desktop bundle is a zip with a manifest built from package.json", { skip: process.platform === "win32" }, () => {
   const m = manifest();
   strictEqual(m.manifest_version, "0.3");
   strictEqual(m.name, "orla");
