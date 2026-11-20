@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { DEFAULT_API, login } from "./auth.js";
+import { DEFAULT_API, login, revoke } from "./auth.js";
 import {
   accounts,
   PAGE,
@@ -71,9 +71,22 @@ async function run(argv: string[]): Promise<void> {
   }
 
   if (command === "logout") {
+    // Revoked on Orla first, then forgotten here, and forgotten whatever Orla
+    // said: a local copy kept because the server was down is the worse outcome.
+    const session = load();
+    const outcome = session ? await revoke(session) : null;
     clear();
-    if (json) return printJson({ forgotten: true });
-    process.stderr.write("session forgotten\n");
+    if (json) return printJson({ forgotten: true, ...(outcome ?? { revoked: false, reason: "no_session" }) });
+    if (!session) {
+      process.stderr.write("no session was stored on this machine\n");
+    } else if (outcome?.revoked) {
+      process.stderr.write("connection revoked on Orla and forgotten on this machine\n");
+    } else {
+      process.stderr.write(
+        `session forgotten on this machine only: ${outcome?.detail}.\n` +
+          "The tokens still work wherever a copy of them is. Revoke this connection in Orla under Agents.\n",
+      );
+    }
     return;
   }
 

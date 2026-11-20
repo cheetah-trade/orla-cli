@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- `orla logout` revokes the connection on Orla before it forgets the session
+  (RFC 7009, at the `revocation_endpoint` from Orla's OAuth metadata). Only
+  this client's tokens end; the person's other connections keep working. When
+  Orla offers no revocation endpoint, cannot be reached or refuses, the session
+  is still forgotten and the CLI says it was forgotten on this machine only.
+  `--json` carries `revoked` and, when false, `reason` and `detail`. The
+  endpoint is used only on the session's own origin.
+- `release.yml` runs the test suite before it publishes.
+
 ## 0.5.1
 
 - `orla export` works again. It asked Orla for 500 transactions in one call,
