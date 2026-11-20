@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.2
 
 - `orla logout` revokes the connection on Orla before it forgets the session
   (RFC 7009, at the `revocation_endpoint` from Orla's OAuth metadata). Only
