@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- The CLI and the bridge read the door's HTTP status. A 401 refreshes the
+  token once and repeats the call; a second 401 is `cli.session_expired`
+  (exit 3, and the bridge signs in again) instead of "Orla refused the call"
+  (exit 6). A 429 is `cli.rate_limited` (exit 6) and a 503 `cli.door_closed`
+  (exit 5), both with Orla's `Retry-After` in `error.details.retry_after`.
+  Nothing is repeated by itself: a refused call never ran, and repeating it
+  with the same arguments reuses its idempotency key.
+- Every request to Orla has a deadline: 60 s, 120 s for a file upload or a
+  statement import (`ORLA_REQUEST_TIMEOUT_MS`). A request past it is
+  `cli.timeout` (exit 5).
+- The bridge answers `ping` itself at once, and keeps reading while a call to
+  Orla is in flight; calls still go to Orla one at a time, in order. A protocol
+  error Orla sends with `id: null` reaches the client under the request's id.
+- A sign-in waits for the browser at most five minutes
+  (`ORLA_SIGN_IN_WAIT_MS`), then closes its port. A callback with the wrong
+  `state`, or naming another issuer in `iss` (RFC 9207), is refused with 400
+  and the sign-in keeps waiting for the real one; until now it closed the port.
+
 - `orla feedback <bug|idea|problem> "text"` sends a bug, a problem or an idea
   to the Orla team through the personal door's new `orla_send_feedback` tool.
   It shows the text and asks before sending; `--yes` sends without the
