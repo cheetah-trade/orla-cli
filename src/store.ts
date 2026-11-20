@@ -78,10 +78,20 @@ function keychainWrite(value: string): boolean {
   if (!useKeychain()) return false;
   try {
     if (platform() === "darwin") {
-      execFileSync("security", ["add-generic-password", "-U", "-s", SERVICE, "-a", ACCOUNT, "-w", value], {
-        stdio: "ignore",
+      // The value goes in on stdin (`security -i` reads its command from
+      // there) and as hex (`-X`), so no quoting can break it. As `-w <value>`
+      // it was in the argument list, and `ps -ww` showed the whole session,
+      // refresh token included, to every process of every user on the machine
+      // at each refresh (review 20.11.2026, P2-3).
+      const hex = Buffer.from(value, "utf8").toString("hex");
+      execFileSync("security", ["-i"], {
+        input: `add-generic-password -U -s ${SERVICE} -a ${ACCOUNT} -X ${hex}\n`,
+        stdio: ["pipe", "ignore", "ignore"],
       });
-      return true;
+      // `security -i` exits 0 even when the command inside it failed, so the
+      // write is read back: a keychain that did not take it falls to the file
+      // instead of losing the session.
+      return keychainRead() === value;
     }
     if (platform() === "linux") {
       execFileSync("secret-tool", ["store", "--label=Orla CLI", "service", SERVICE, "account", ACCOUNT], {
