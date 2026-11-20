@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 
 import { accessToken, DEFAULT_API, doorPath, login, reach } from "./auth.js";
 import { badAnswer, describe, refused } from "./errors.js";
-import { load } from "./store.js";
+import { clear, load } from "./store.js";
 
 export const PROTOCOL_VERSION = "2026-07-28";
 
@@ -110,6 +110,12 @@ const line = (value: unknown): void => {
  * A failed sign-in (the tab closed, the state came back wrong) is retried on
  * the next request, but not sooner than a pause: a client that polls would
  * otherwise open a browser tab per poll.
+ *
+ * A session that dies under a running bridge (revoked in the app, its refresh
+ * token refused) is the same situation, not a different one: until 0.5.1 the
+ * dead session stayed stored, `ready()` kept saying yes, and every call came
+ * back "`orla logout` and `orla login` again" to a person with no terminal.
+ * `expired()` forgets it and starts the sign-in.
  */
 class SignIn {
   private pending: Promise<void> | null = null;
@@ -135,6 +141,13 @@ class SignIn {
         });
     }
     return false;
+  }
+
+  /** The stored session was refused for good: forget it and sign in again. */
+  expired(): void {
+    clear();
+    this.lastFailure = 0;
+    this.ready();
   }
 
   /** The answer to a request that arrived while nobody is signed in yet. */
@@ -204,8 +217,15 @@ export async function bridge(apiBase: string = DEFAULT_API): Promise<void> {
       if (request.id === undefined || request.id === null) continue;
       line(answer);
     } catch (err) {
-      if (request.id === undefined || request.id === null) continue;
       const { code, message } = describe(err);
+      if (code === "cli.session_expired") {
+        process.stderr.write(`orla: ${message}; signing in again\n`);
+        signIn.expired();
+        const local = signIn.answer(request);
+        if (local) line(local);
+        continue;
+      }
+      if (request.id === undefined || request.id === null) continue;
       line({ jsonrpc: "2.0", id: request.id, error: { code: -32000, message, data: { code } } });
     }
   }

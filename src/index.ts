@@ -14,6 +14,8 @@ import { fileURLToPath } from "node:url";
 import { DEFAULT_API, login } from "./auth.js";
 import {
   accounts,
+  PAGE,
+  parseLimit,
   printFailure,
   printJson,
   resolveSpace,
@@ -114,6 +116,16 @@ async function run(argv: string[]): Promise<void> {
     throw usage(`unknown command: ${command}\n\n${USAGE}`);
   }
 
+  // Before the space is resolved: a bad --limit is the command line's fault and
+  // says so without a single request.
+  const sub = words[1] ?? "list";
+  const limit =
+    command === "export"
+      ? parseLimit(optional(flags, "limit"))
+      : command === "tx" && sub === "list"
+        ? (parseLimit(optional(flags, "limit"), PAGE) ?? 50)
+        : undefined;
+
   const spaceId = await resolveSpace(optional(flags, "space"));
 
   if (command === "accounts") {
@@ -122,13 +134,12 @@ async function run(argv: string[]): Promise<void> {
   }
 
   if (command === "export") {
-    await txExport(filterFrom(spaceId, flags, 500), json);
+    await txExport(filterFrom(spaceId, flags, limit), json);
     return;
   }
 
-  const sub = words[1] ?? "list";
   if (sub === "list") {
-    await txList(filterFrom(spaceId, flags, 50), json);
+    await txList(filterFrom(spaceId, flags, limit), json);
     return;
   }
   if (sub === "add") {
@@ -149,14 +160,14 @@ async function run(argv: string[]): Promise<void> {
   throw usage(`unknown: orla tx ${sub}`);
 }
 
-function filterFrom(spaceId: string, flags: Flags, fallbackLimit: number) {
+function filterFrom(spaceId: string, flags: Flags, limit: number | undefined) {
   return {
     spaceId,
     from: optional(flags, "from"),
     to: optional(flags, "to"),
     search: optional(flags, "search"),
     account: optional(flags, "account"),
-    limit: Number(optional(flags, "limit") ?? fallbackLimit),
+    limit,
   };
 }
 

@@ -47,9 +47,9 @@ re-pointed by an update.
 | `orla spaces` | The spaces in reach. |
 | `orla use <space-id>` | Remember one as the default. |
 | `orla accounts` | Accounts in the space. |
-| `orla tx list` | Transactions. `--from --to --search --account --limit`. |
+| `orla tx list` | Transactions. `--from --to --search --account --limit` (50 by default, at most 200). |
 | `orla tx add` | Record one. `--account --kind --amount --date [--payee --note]`. |
-| `orla export` | The same rows as CSV on stdout. |
+| `orla export` | Every matching row as CSV on stdout, read 200 at a time. `--limit` stops early. |
 | `orla tools` | Which tools this connection was given. |
 | `orla mcp [--api URL]` | stdio bridge (below). |
 | `orla version` | Which version this is. |

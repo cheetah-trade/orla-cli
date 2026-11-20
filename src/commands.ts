@@ -8,7 +8,7 @@
 
 import { randomUUID } from "node:crypto";
 
-import { describe, noSpaces, spaceRequired } from "./errors.js";
+import { describe, noSpaces, spaceRequired, usage } from "./errors.js";
 import { callTool } from "./mcp.js";
 import { load, save } from "./store.js";
 
@@ -52,6 +52,20 @@ export function toCsv(rows: Row[], columns: string[]): string {
     return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
   };
   return [columns.join(","), ...rows.map((r) => columns.map((c) => cell(r[c])).join(","))].join("\n");
+}
+
+/**
+ * `--limit` read before any request: a number Orla would refuse is said here,
+ * with the bound, instead of coming back as the server's validation error.
+ */
+export function parseLimit(raw: string | undefined, max?: number): number | undefined {
+  if (raw === undefined) return undefined;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 1) throw usage(`--limit must be a whole number from 1, got ${raw}`);
+  if (max !== undefined && n > max) {
+    throw usage(`--limit is at most ${max} for this command, got ${raw}; \`orla export\` reads every row`);
+  }
+  return n;
 }
 
 export async function whoami(): Promise<Row> {
@@ -99,23 +113,57 @@ export type TxFilter = {
   to?: string;
   search?: string;
   account?: string;
-  limit: number;
+  /** How many rows at most; undefined means every row the filters match. */
+  limit?: number;
 };
 
-async function fetchTransactions(filter: TxFilter): Promise<Row[]> {
+/**
+ * The most rows Orla serves in one call of `orla_list_transactions`
+ * (`LIST_CAP` on the server). Asking for more is refused, not trimmed.
+ */
+export const PAGE = 200;
+
+type TxPage = { items?: Row[]; transactions?: Row[]; total?: number };
+
+async function fetchPage(filter: TxFilter, offset: number, limit: number): Promise<{ rows: Row[]; total?: number }> {
   const data = (await callTool("orla_list_transactions", {
     space_id: filter.spaceId,
     date_from: filter.from,
     date_to: filter.to,
     search: filter.search,
     account_id: filter.account,
-    limit: filter.limit,
-  })) as { items?: Row[]; transactions?: Row[] };
-  return data.items ?? data.transactions ?? [];
+    limit,
+    offset,
+  })) as TxPage;
+  return { rows: data.items ?? data.transactions ?? [], total: data.total };
+}
+
+/**
+ * Every row the filters match, a page of `PAGE` at a time.
+ *
+ * Until 0.5.1 `orla export` asked for 500 rows in one call, the server's
+ * ceiling is 200, and every export ended in a refusal. A page shorter than
+ * asked for is the last one; `total` is a second stop, so a server that
+ * echoes a smaller window than requested is not walked forever.
+ */
+async function fetchTransactions(filter: TxFilter): Promise<Row[]> {
+  const rows: Row[] = [];
+  let offset = 0;
+  for (;;) {
+    const remaining = filter.limit === undefined ? PAGE : filter.limit - rows.length;
+    if (remaining <= 0) break;
+    const want = Math.min(PAGE, remaining);
+    const page = await fetchPage(filter, offset, want);
+    rows.push(...page.rows);
+    offset += page.rows.length;
+    if (page.rows.length < want) break;
+    if (page.total !== undefined && offset >= page.total) break;
+  }
+  return rows;
 }
 
 export async function txList(filter: TxFilter, json: boolean): Promise<void> {
-  const rows = await fetchTransactions(filter);
+  const { rows } = await fetchPage(filter, 0, filter.limit ?? 50);
   if (json) return printJson(rows);
   printTable(rows, ["occurred_on", "kind", "signed_amount", "currency", "payee"]);
 }
