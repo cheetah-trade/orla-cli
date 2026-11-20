@@ -20,8 +20,40 @@ type Row = Record<string, unknown>;
  * A program reads `ok`, then branches on `error.code`; it never has to guess
  * from the shape of the data whether the call worked.
  */
-export function printJson(data: unknown): void {
-  process.stdout.write(`${JSON.stringify({ ok: true, data }, null, 2)}\n`);
+export function printJson(data: unknown, truncated?: Truncated): void {
+  const envelope = truncated ? { ok: true, data, truncated } : { ok: true, data };
+  process.stdout.write(`${JSON.stringify(envelope, null, 2)}\n`);
+}
+
+/**
+ * Rows Orla had and this answer does not carry. `shown` of `total`, and what
+ * the cut was: a list Orla caps at its ceiling (`truncated` in the tool's
+ * answer), a page cut to fit its size (`answer_truncated`), or the `--limit`.
+ */
+export type Truncated = { shown: number; total: number; reason: "server_cap" | "limit" | "incomplete" };
+
+/**
+ * Said on stderr, so a person sees it and the CSV on stdout stays clean.
+ *
+ * Until 0.5.3 every list threw `total` and `truncated` away: an export over a
+ * space with more rows than came back was a short file with nothing saying so,
+ * and a category list over Orla's ceiling left blank cells in the CSV.
+ */
+function sayCut(what: string, cut: Truncated | undefined, hint: string): void {
+  if (!cut) return;
+  process.stderr.write(`orla: showing ${cut.shown} of ${cut.total} ${what}; ${hint}\n`);
+}
+
+/** The cut a list tool reports, in either of the two shapes Orla answers with. */
+function cutOf(data: Record<string, unknown>, shown: number): Truncated | undefined {
+  for (const key of ["truncated", "answer_truncated"]) {
+    const note = data[key] as { total?: unknown } | undefined;
+    if (note && typeof note === "object") {
+      const total = typeof note.total === "number" ? note.total : undefined;
+      if (total !== undefined && total > shown) return { shown, total, reason: "server_cap" };
+    }
+  }
+  return undefined;
 }
 
 export function printFailure(err: unknown): void {
@@ -96,8 +128,10 @@ export async function resolveSpace(flag?: string): Promise<string> {
 export async function accounts(spaceId: string, json: boolean): Promise<void> {
   const data = (await callTool("orla_list_accounts", { space_id: spaceId })) as { accounts?: Row[] };
   const rows = data.accounts ?? [];
-  if (json) return printJson(rows);
+  const cut = cutOf(data as Record<string, unknown>, rows.length);
+  if (json) return printJson(rows, cut);
   printTable(rows, ["id", "name", "kind", "currency", "balance"]);
+  sayCut("accounts", cut, "Orla lists at most that many here, the rest are in the app");
 }
 
 export async function spaces(json: boolean): Promise<void> {
@@ -163,15 +197,17 @@ async function fetchPage(filter: TxFilter, offset: number, limit: number): Promi
  * the walk goes on to `total`; only an uncut short page, or an empty one,
  * ends it when there is no total.
  */
-async function fetchTransactions(filter: TxFilter): Promise<Row[]> {
+async function fetchTransactions(filter: TxFilter): Promise<{ rows: Row[]; total?: number }> {
   const rows: Row[] = [];
   let offset = 0;
+  let total: number | undefined;
   for (;;) {
     const remaining = filter.limit === undefined ? PAGE : filter.limit - rows.length;
     if (remaining <= 0) break;
     const want = Math.min(PAGE, remaining);
     const page = await fetchPage(filter, offset, want);
     rows.push(...page.rows);
+    if (page.total !== undefined) total = page.total;
     // nothing came back: going on would ask for the same window forever
     if (page.rows.length === 0) break;
     offset = page.nextOffset ?? offset + page.rows.length;
@@ -181,13 +217,22 @@ async function fetchTransactions(filter: TxFilter): Promise<Row[]> {
       break;
     }
   }
-  return rows;
+  return { rows, total };
+}
+
+/** What a transactions answer left out, against Orla's `total`. */
+function txCut(shown: number, total: number | undefined, limit: number | undefined): Truncated | undefined {
+  if (total === undefined || shown >= total) return undefined;
+  return { shown, total, reason: limit !== undefined && shown >= limit ? "limit" : "incomplete" };
 }
 
 export async function txList(filter: TxFilter, json: boolean): Promise<void> {
-  const { rows } = await fetchPage(filter, 0, filter.limit ?? 50);
-  if (json) return printJson(rows);
+  const limit = filter.limit ?? 50;
+  const { rows, total } = await fetchPage(filter, 0, limit);
+  const cut = txCut(rows.length, total, limit);
+  if (json) return printJson(rows, cut);
   printTable(rows, ["occurred_on", "kind", "signed_amount", "currency", "payee"]);
+  sayCut("transactions", cut, "`--limit` up to 200 shows more, `orla export` writes them all");
 }
 
 /**
@@ -198,25 +243,47 @@ export async function txList(filter: TxFilter, json: boolean): Promise<void> {
  * accountant, and "8c9767bd" is not an answer to "which card was this".
  */
 export async function txExport(filter: TxFilter, json = false): Promise<void> {
-  const [rows, accountNames, categoryNames] = await Promise.all([
+  const [{ rows, total }, accountNames, categoryNames] = await Promise.all([
     fetchTransactions(filter),
     namesOf("orla_list_accounts", "accounts", filter.spaceId),
     namesOf("orla_list_categories", "categories", filter.spaceId),
   ]);
+  const cut = txCut(rows.length, total, filter.limit);
   const named = rows.map((row) => ({
     ...row,
     account: accountNames.get(String(row["account_id"] ?? "")) ?? row["account_id"],
     category: categoryNames.get(String(row["category_id"] ?? "")) ?? "",
   }));
-  if (json) return printJson(named);
+  if (json) return printJson(named, cut);
   process.stdout.write(
     `${toCsv(named, ["occurred_on", "kind", "signed_amount", "currency", "payee", "note", "category", "account"])}\n`,
+  );
+  sayCut(
+    "transactions",
+    cut,
+    cut?.reason === "limit" ? "that is the `--limit`" : "Orla stopped answering pages before the end; run the export again",
   );
 }
 
 async function namesOf(tool: string, key: string, spaceId: string): Promise<Map<string, string>> {
-  const data = (await callTool(tool, { space_id: spaceId })) as Record<string, Row[]>;
-  return new Map((data[key] ?? []).map((row) => [String(row["id"]), String(row["name"] ?? "")]));
+  const data = (await callTool(tool, { space_id: spaceId })) as Record<string, unknown>;
+  const rows = (data[key] as Row[] | undefined) ?? [];
+  // A name Orla did not send leaves the id (accounts) or a blank (categories)
+  // in its column: said here, so the blank is not read as "uncategorised".
+  sayCut(key, cutOf(data, rows.length), `the rest show as ids or blanks in the ${key.replace(/s$/, "")} column`);
+  return new Map(rows.map((row) => [String(row["id"]), String(row["name"] ?? "")]));
+}
+
+/**
+ * Today on this machine's calendar, as YYYY-MM-DD.
+ *
+ * `toISOString()` is UTC: after midnight anywhere east of Greenwich, before it
+ * anywhere west, `orla tx add` booked yesterday or tomorrow, and on the first
+ * of the month the entry landed in the month before.
+ */
+export function localToday(now: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 export async function txAdd(

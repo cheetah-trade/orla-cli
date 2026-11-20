@@ -103,6 +103,12 @@ envelope on stdout:
 { "ok": false, "error": { "code": "cli.not_connected", "message": "not connected: run `orla login` first" } }
 ```
 
+A list that left rows out (`accounts`, `tx list`, `export`) adds
+`"truncated": { "shown": 200, "total": 201, "reason": "server_cap" }` beside
+`data`; `reason` is `server_cap` (Orla's ceiling), `limit` (your `--limit`) or
+`incomplete` (Orla stopped answering pages before its total). Without `--json`
+the same is one line on stderr.
+
 Workflow: run with `--json`, check `ok`, branch on `error.code`. Do not parse
 the human table; its column widths are not a contract.
 
