@@ -24,7 +24,7 @@ import { spawn } from "node:child_process";
 import { platform } from "node:os";
 
 import { cancelled, notConnected, refused, sessionExpired, unreachable } from "./errors.js";
-import { load, save, type Session } from "./store.js";
+import { load, save, withRefreshLock, type Session } from "./store.js";
 
 //: The API's own origin, behind the `/api` ingress prefix — not the app's.
 //: `app.orla.finance/oauth/authorize` is the frontend's 404 page.
@@ -236,25 +236,37 @@ export async function login(apiBase: string, door: Door = "personal"): Promise<S
   return session;
 }
 
-/** A live access token, refreshed if the stored one is about to expire. */
+const fresh = (session: Session): boolean => session.expiresAt - 60_000 > Date.now();
+
+/**
+ * A live access token, refreshed if the stored one is about to expire.
+ *
+ * The refresh runs under `withRefreshLock`, and the session is read again once
+ * the lock is held: if another process or call refreshed while this one
+ * waited, its tokens are used as they are. Presenting the old refresh token a
+ * second time would end the whole connection on Orla's side.
+ */
 export async function accessToken(): Promise<{ token: string; session: Session }> {
   const session = load();
   if (!session) throw notConnected();
-  if (session.expiresAt - 60_000 > Date.now()) {
-    return { token: session.accessToken, session };
-  }
-  const tokens = await postForm(`${session.apiBase}/oauth/token`, {
-    grant_type: "refresh_token",
-    refresh_token: session.refreshToken,
-    client_id: CLIENT_ID,
-    resource: `${session.apiBase}${doorPath(session)}`,
+  if (fresh(session)) return { token: session.accessToken, session };
+  return withRefreshLock(async () => {
+    const current = load();
+    if (!current) throw notConnected();
+    if (fresh(current)) return { token: current.accessToken, session: current };
+    const tokens = await postForm(`${current.apiBase}/oauth/token`, {
+      grant_type: "refresh_token",
+      refresh_token: current.refreshToken,
+      client_id: CLIENT_ID,
+      resource: `${current.apiBase}${doorPath(current)}`,
+    });
+    const refreshed: Session = {
+      ...current,
+      accessToken: tokens["access_token"] ?? "",
+      refreshToken: tokens["refresh_token"] ?? "",
+      expiresAt: Date.now() + Number(tokens["expires_in"] ?? 0) * 1000,
+    };
+    save(refreshed);
+    return { token: refreshed.accessToken, session: refreshed };
   });
-  const refreshed: Session = {
-    ...session,
-    accessToken: tokens["access_token"] ?? "",
-    refreshToken: tokens["refresh_token"] ?? "",
-    expiresAt: Date.now() + Number(tokens["expires_in"] ?? 0) * 1000,
-  };
-  save(refreshed);
-  return { token: refreshed.accessToken, session: refreshed };
 }

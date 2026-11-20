@@ -13,7 +13,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, closeSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir, platform } from "node:os";
 import { dirname, join } from "node:path";
 
@@ -143,5 +143,51 @@ function readFileOrNull(path: string): string | null {
     return readFileSync(path, "utf8");
   } catch {
     return null;
+  }
+}
+
+/**
+ * One refresh at a time on this machine.
+ *
+ * Orla treats a refresh token presented twice as stolen and ends every token
+ * of that connection (RFC 9700 reuse detection). Two `orla` processes, or the
+ * three parallel calls of one `orla export`, that find the same expired token
+ * would each present it, and the second presentation signs the person out. So
+ * whoever refreshes holds a lock file; the rest wait, then read the session the
+ * winner saved instead of refreshing again.
+ *
+ * `O_EXCL` create is the lock: it works the same for processes and for calls
+ * inside one process, and needs no native module. A lock older than
+ * `STALE_LOCK_MS` belongs to a process that died mid-refresh and is taken over.
+ */
+const STALE_LOCK_MS = 30_000;
+const LOCK_POLL_MS = 50;
+
+function lockPath(): string {
+  return join(dirname(filePath()), "refresh.lock");
+}
+
+export async function withRefreshLock<T>(work: () => Promise<T>): Promise<T> {
+  const path = lockPath();
+  mkdirSync(dirname(path), { recursive: true });
+  for (;;) {
+    try {
+      closeSync(openSync(path, "wx", 0o600));
+      break;
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
+      try {
+        if (Date.now() - statSync(path).mtimeMs > STALE_LOCK_MS) rmSync(path, { force: true });
+      } catch {
+        // released between the open and the stat: try again at once
+        continue;
+      }
+      await new Promise((r) => setTimeout(r, LOCK_POLL_MS));
+    }
+  }
+  try {
+    return await work();
+  } finally {
+    rmSync(path, { force: true });
   }
 }
