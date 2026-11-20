@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-20 16:05)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-20 22:27)
 
-Window (UTC): 2026-11-13 15:05:50 – 2026-11-20 15:05:50, every run listed.
+Window (UTC): 2026-11-13 21:27:20 – 2026-11-20 21:27:20, every run listed.
 
 ## CI by workflow
 
@@ -8,9 +8,10 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 
 | Workflow | Runs | Failed | Not run yet | Failure rate | Reruns | Median min | p90 min |
 |---|---|---|---|---|---|---|---|
-| ci | 23 | 0 | 0 | 0% | 0 | 0.5 | 0.6 |
-| dco | 14 | 3 | 0 | 21% | 0 | 0.1 | 0.1 |
-| release | 2 | 0 | 0 | 0% | 0 | 0.5 | 0.6 |
+| ci | 35 | 0 | 0 | 0% | 0 | 0.5 | 0.6 |
+| dco | 24 | 3 | 0 | 12% | 0 | 0.1 | 0.2 |
+| Dependabot Updates | 4 | 0 | 0 | 0% | 0 | 0.7 | 0.8 |
+| release | 3 | 0 | 0 | 0% | 0 | 0.6 | 0.8 |
 
 ## Where it fails (jobs of recent failed runs)
 
@@ -28,11 +29,11 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 
 ## Security alerts on GitHub (open)
 
-- Dependencies (Dependabot): could not read
+- Dependencies (Dependabot): none
 - Code scanning: could not read
 - Secret scanning: none
 
 ## Pull requests
 
 - Merged, complete UTC days: 6 without bots (0 by bots left out); to merge, bots excluded: median 0.2 h, p90 2.4 h.
-- Open (not drafts): 1; oldest: #14 feat(plugin): тот же плагин для ChatGPT и Codex (владельцу) (52.1 d).
+- Open (not drafts): 5; oldest: #14 feat(plugin): тот же плагин для ChatGPT и Codex (владельцу) (52.3 d); #28 build(deps): Bump actions/checkout from 4 to 7 (0.1 d); #29 build(deps): Bump actions/setup-node from 4 to 7 (0.1 d); #30 build(deps-dev): Bump @types/node from 22.20.1 to 26.6.6 (0.1 d); #31 build(deps-dev): Bump typescript from 5.9.3 to 7.0.2 (0.1 d).
