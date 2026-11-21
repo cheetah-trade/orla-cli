@@ -24,6 +24,14 @@
   (`ORLA_SIGN_IN_WAIT_MS`), then closes its port. A callback with the wrong
   `state`, or naming another issuer in `iss` (RFC 9207), is refused with 400
   and the sign-in keeps waiting for the real one; until now it closed the port.
+- On macOS the session goes into the keychain through `security -i` on stdin,
+  as hex: it is no longer in the argument list, where `ps -ww` showed the
+  whole session, refresh token included, at every refresh. The write is read
+  back, and a keychain that did not take it falls back to the 0600 file.
+- On Windows the sign-in opens the browser through `rundll32
+  url.dll,FileProtocolHandler` with the URL as one argument. Through `start`
+  in a shell, cmd.exe cut the authorize URL at the first `&` and Orla refused
+  it. CI runs the suite on windows-latest too.
 
 - `orla feedback <bug|idea|problem> "text"` sends a bug, a problem or an idea
   to the Orla team through the personal door's new `orla_send_feedback` tool.

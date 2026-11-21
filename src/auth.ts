@@ -66,14 +66,34 @@ function pkce(): { verifier: string; challenge: string } {
   return { verifier, challenge };
 }
 
+/**
+ * The program that opens `url` in the person's browser, and its arguments.
+ *
+ * Windows has no `open`: `start` is a cmd.exe builtin, and running it through
+ * a shell handed the URL to cmd's parser, which ends a command at `&`. The
+ * authorize URL is all `&`, so the browser opened at `...?client_id=...` and
+ * Orla refused it: nobody could sign in from Claude Desktop on Windows (review
+ * 20.11.2026, P2-4). `rundll32 url.dll,FileProtocolHandler` is the shell's own
+ * URL handler and takes the URL as one argument, with no shell in between.
+ */
+export function browserCommand(url: string, os: NodeJS.Platform = platform()): { cmd: string; args: string[] } {
+  if (os === "darwin") return { cmd: "open", args: [url] };
+  if (os === "win32") return { cmd: "rundll32", args: ["url.dll,FileProtocolHandler", url] };
+  return { cmd: "xdg-open", args: [url] };
+}
+
 function openBrowser(url: string): void {
   // Honoured by CI and by anyone on a machine whose browser is somewhere else:
   // the URL is printed either way, so refusing to launch anything is a complete
   // interface rather than a degraded one.
   if (process.env["ORLA_NO_BROWSER"]) return;
-  const cmd = platform() === "darwin" ? "open" : platform() === "win32" ? "start" : "xdg-open";
+  const { cmd, args } = browserCommand(url);
   try {
-    spawn(cmd, [url], { stdio: "ignore", detached: true, shell: platform() === "win32" }).unref();
+    const child = spawn(cmd, args, { stdio: "ignore", detached: true });
+    child.on("error", () => {
+      // no such program (a box without xdg-open): the printed URL stands
+    });
+    child.unref();
   } catch {
     // headless box: the printed URL below is the whole interface
   }
