@@ -1,0 +1,20 @@
+{
+  "name": "orla",
+  "interface": {
+    "displayName": "Orla"
+  },
+  "plugins": [
+    {
+      "name": "orla",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Finance"
+    }
+  ]
+}

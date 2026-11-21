@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "orla": {
+      "type": "streamable-http",
+      "url": "https://app.orla.finance/api/mcp/personal"
+    }
+  }
+}

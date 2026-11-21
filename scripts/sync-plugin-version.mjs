@@ -1,12 +1,13 @@
 /**
  * Carry the package version into the plugin manifest.
  *
- * Three files in this repository name a version, and they ship together: npm
+ * Four files in this repository name a version, and they ship together: npm
  * installs `orla-cli`, `/plugin install orla@orla` installs the skills next to
- * it, and `server.json` is the entry a client or a directory resolves the
- * server by. `npm version` only knows about the first one, so without this the
- * others silently stay a release behind: the registry entry did exactly that
- * and sat at 0.1.2 while the package was 0.2.1.
+ * it, `plugin.json` is the same plugin for ChatGPT and Codex, and `server.json`
+ * is the entry a client or a directory resolves the server by. `npm version`
+ * only knows about the first one, so without this the others silently stay a
+ * release behind: the registry entry did exactly that and sat at 0.1.2 while the
+ * package was 0.2.1.
  *
  * Wired into the `version` lifecycle script, which npm runs after it bumps
  * package.json and before it commits, so the manifest lands in the same commit
@@ -17,19 +18,23 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const MANIFEST = join(ROOT, ".claude-plugin", "plugin.json");
+// The Claude Code manifest and the portable one ChatGPT and Codex read (Agent
+// Plugins 1.0.0): two descriptions of one plugin, released together.
+const MANIFESTS = [join(ROOT, ".claude-plugin", "plugin.json"), join(ROOT, "plugin.json")];
 const REGISTRY = join(ROOT, "server.json");
 
 const { version } = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
 
-const manifest = JSON.parse(readFileSync(MANIFEST, "utf8"));
-if (manifest.version === version) {
-  console.log(`plugin manifest already at ${version}`);
-} else {
+for (const path of MANIFESTS) {
+  const manifest = JSON.parse(readFileSync(path, "utf8"));
+  if (manifest.version === version) {
+    console.log(`${path.slice(ROOT.length + 1)} already at ${version}`);
+    continue;
+  }
   const before = manifest.version;
   manifest.version = version;
-  writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
-  console.log(`plugin manifest ${before} -> ${version}`);
+  writeFileSync(path, JSON.stringify(manifest, null, 2) + "\n");
+  console.log(`${path.slice(ROOT.length + 1)} ${before} -> ${version}`);
 }
 
 const entry = JSON.parse(readFileSync(REGISTRY, "utf8"));
