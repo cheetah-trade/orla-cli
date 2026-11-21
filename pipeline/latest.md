@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-21 04:49)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-21 11:10)
 
-Window (UTC): 2026-11-14 03:49:43 – 2026-11-21 03:49:43, every run listed.
+Window (UTC): 2026-11-14 10:10:05 – 2026-11-21 10:10:05, every run listed.
 
 ## CI by workflow
 
@@ -38,4 +38,4 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 ## Pull requests
 
 - Merged, complete UTC days: 12 without bots (0 by bots left out); to merge, bots excluded: median 0.1 h, p90 0.8 h.
-- Open (not drafts): 5; oldest: #14 feat(plugin): тот же плагин для ChatGPT и Codex (владельцу) (52.6 d); #28 build(deps): Bump actions/checkout from 4 to 7 (0.3 d); #29 build(deps): Bump actions/setup-node from 4 to 7 (0.3 d); #30 build(deps-dev): Bump @types/node from 22.20.1 to 26.6.6 (0.3 d); #31 build(deps-dev): Bump typescript from 5.9.3 to 7.0.2 (0.3 d).
+- Open (not drafts): 5; oldest: #14 feat(plugin): тот же плагин для ChatGPT и Codex (владельцу) (52.9 d); #28 build(deps): Bump actions/checkout from 4 to 7 (0.6 d); #29 build(deps): Bump actions/setup-node from 4 to 7 (0.6 d); #30 build(deps-dev): Bump @types/node from 22.20.1 to 26.6.6 (0.6 d); #31 build(deps-dev): Bump typescript from 5.9.3 to 7.0.2 (0.6 d).
