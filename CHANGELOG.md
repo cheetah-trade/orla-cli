@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.3
 
 - Every request to Orla says who sent it: `User-Agent: orla-cli/<version>
   (node <version>; <platform>)`. `ORLA_DEBUG=1` prints one stderr line per
