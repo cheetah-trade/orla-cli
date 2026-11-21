@@ -32,6 +32,13 @@
   url.dll,FileProtocolHandler` with the URL as one argument. Through `start`
   in a shell, cmd.exe cut the authorize URL at the first `&` and Orla refused
   it. CI runs the suite on windows-latest too.
+- A list that left rows out says so. `orla accounts`, `orla tx list` and
+  `orla export` print "showing N of M" on stderr and add `truncated`
+  (`shown`, `total`, `reason`) beside `data` with `--json`; the export also
+  names account and category lists Orla capped, whose rows show as ids or
+  blanks. Until now the CSV came out short with nothing saying so.
+- `orla tx add` without `--date` books today on this machine's calendar, not
+  UTC's: after midnight east of Greenwich it booked yesterday.
 
 - `orla feedback <bug|idea|problem> "text"` sends a bug, a problem or an idea
   to the Orla team through the personal door's new `orla_send_feedback` tool.

@@ -66,6 +66,12 @@ With `--json`, every command answers with one envelope on stdout:
 { "ok": false, "error": { "code": "cli.not_connected", "message": "not connected: run `orla login` first" } }
 ```
 
+A list that left rows out (`accounts`, `tx list`, `export`) adds
+`"truncated": { "shown": 200, "total": 201, "reason": "server_cap" }` beside
+`data`; `reason` is `server_cap` (Orla's ceiling), `limit` (your `--limit`) or
+`incomplete` (Orla stopped answering pages before its total). Without `--json`
+the same is one line on stderr.
+
 Read `ok`, then branch on `error.code`. Codes that begin `cli.` are the CLI's
 own; any other code is Orla's, passed through unchanged, the same name the
 REST API and the MCP endpoint use. The exit status says which kind of failure
