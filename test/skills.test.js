@@ -35,7 +35,6 @@ const TOOLS = new Map(contract.tools.map((t) => [t.name, new Set(t.arguments)]))
  * calling it.
  */
 const ABSENT_ON_PURPOSE = new Map([
-  ["orla_risk_resolve", "a verdict silences a detector for half a year; it belongs to a person, in Orla"],
   // The `orla` skill names the agent door's paying tools to say, in so many
   // words, that a personal connection does not have them. If the personal door
   // ever gained one, that sentence would be the first thing to become false.

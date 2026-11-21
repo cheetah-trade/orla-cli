@@ -1,6 +1,14 @@
 {
   "client": "https://github.com/cheetah-trade/orla-cli",
   "door": "personal connection (mcp_personal.PRESET, money tools withheld)",
+  "left": [
+    "orla_find_service",
+    "orla_risk_alerts",
+    "orla_risk_case",
+    "orla_risk_check",
+    "orla_risk_counterparties",
+    "orla_risk_trace"
+  ],
   "tools": [
     {
       "arguments": [
@@ -11,6 +19,7 @@
         "note",
         "occurred_on",
         "paid_by",
+        "rationale",
         "space_id"
       ],
       "destructive": false,
@@ -32,6 +41,7 @@
         "idempotency_key",
         "note",
         "payee",
+        "rationale",
         "space_id",
         "transaction_id"
       ],
@@ -54,6 +64,7 @@
         "note",
         "occurred_on",
         "payee",
+        "rationale",
         "space_id"
       ],
       "destructive": false,
@@ -70,14 +81,43 @@
     },
     {
       "arguments": [
-        "limit",
-        "q",
+        "currency",
+        "idempotency_key",
+        "kind",
+        "name",
+        "opening_balance",
+        "rationale",
         "space_id"
       ],
       "destructive": false,
-      "name": "orla_find_service",
-      "readOnly": true,
+      "name": "orla_create_account",
+      "readOnly": false,
       "required": [
+        "currency",
+        "idempotency_key",
+        "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "accept_balance_break",
+        "accept_holder",
+        "account_id",
+        "document_id",
+        "idempotency_key",
+        "preview_id",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_import_statement",
+      "readOnly": false,
+      "required": [
+        "account_id",
+        "document_id",
+        "idempotency_key",
+        "preview_id",
         "space_id"
       ]
     },
@@ -87,6 +127,22 @@
       ],
       "destructive": false,
       "name": "orla_list_accounts",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "due",
+        "limit",
+        "offset",
+        "q",
+        "space_id",
+        "status"
+      ],
+      "destructive": false,
+      "name": "orla_list_bills",
       "readOnly": true,
       "required": [
         "space_id"
@@ -122,6 +178,17 @@
       ],
       "destructive": false,
       "name": "orla_list_payments",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_reports",
       "readOnly": true,
       "required": [
         "space_id"
@@ -169,63 +236,97 @@
     },
     {
       "arguments": [
+        "category_id",
+        "clear_category",
+        "space_id",
+        "transaction_ids"
+      ],
+      "destructive": false,
+      "name": "orla_preview_recategorize",
+      "readOnly": true,
+      "required": [
+        "space_id",
+        "transaction_ids"
+      ]
+    },
+    {
+      "arguments": [
+        "accept_balance_break",
+        "accept_holder",
+        "account_id",
+        "document_id",
         "space_id"
       ],
       "destructive": false,
-      "name": "orla_risk_alerts",
+      "name": "orla_preview_statement_import",
       "readOnly": true,
       "required": [
+        "document_id",
         "space_id"
       ]
     },
     {
       "arguments": [
-        "space_id",
-        "which"
+        "bill_id",
+        "space_id"
       ],
       "destructive": false,
-      "name": "orla_risk_case",
+      "name": "orla_read_bill",
       "readOnly": true,
       "required": [
+        "bill_id",
         "space_id"
       ]
     },
     {
       "arguments": [
-        "space_id",
-        "who"
-      ],
-      "destructive": false,
-      "name": "orla_risk_check",
-      "readOnly": true,
-      "required": [
-        "space_id",
-        "who"
-      ]
-    },
-    {
-      "arguments": [
+        "arguments",
+        "name",
         "space_id"
       ],
       "destructive": false,
-      "name": "orla_risk_counterparties",
+      "name": "orla_read_report",
       "readOnly": true,
       "required": [
+        "name",
         "space_id"
       ]
     },
     {
       "arguments": [
-        "months",
+        "category_id",
+        "clear_category",
+        "idempotency_key",
+        "preview_id",
+        "rationale",
         "space_id",
-        "who"
+        "transaction_ids"
+      ],
+      "destructive": true,
+      "name": "orla_recategorize",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "preview_id",
+        "space_id",
+        "transaction_ids"
+      ]
+    },
+    {
+      "arguments": [
+        "error_code",
+        "kind",
+        "rationale",
+        "space_id",
+        "text",
+        "tool_name"
       ],
       "destructive": false,
-      "name": "orla_risk_trace",
-      "readOnly": true,
+      "name": "orla_send_feedback",
+      "readOnly": false,
       "required": [
-        "space_id",
-        "who"
+        "kind",
+        "text"
       ]
     },
     {
@@ -233,6 +334,7 @@
         "amount",
         "budget_id",
         "idempotency_key",
+        "rationale",
         "space_id"
       ],
       "destructive": true,
@@ -253,6 +355,26 @@
       "name": "orla_split_balances",
       "readOnly": true,
       "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "content_base64",
+        "content_type",
+        "filename",
+        "idempotency_key",
+        "rationale",
+        "read_statement",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_upload_document",
+      "readOnly": false,
+      "required": [
+        "content_base64",
+        "filename",
+        "idempotency_key",
         "space_id"
       ]
     },

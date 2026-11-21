@@ -1,0 +1,12 @@
+# Keeps the commit pins in the workflows current: release.yml pins its actions
+# by SHA because it holds `id-token: write`, and a pin nobody moves goes stale.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly

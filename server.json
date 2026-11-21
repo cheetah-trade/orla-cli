@@ -2,9 +2,9 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "finance.orla/orla",
   "title": "Orla",
-  "description": "Personal, family and business books over fiat and crypto. Reads and records; it cannot pay.",
-  "version": "0.3.0",
-  "websiteUrl": "https://orla.finance/en/ai-agents/api",
+  "description": "Personal finance and bookkeeping from your own Orla books. Reads and records; cannot move money.",
+  "version": "0.5.3",
+  "websiteUrl": "https://www.orla.finance/en/mcp-claude?utm_source=directory&utm_medium=mcp&utm_campaign=mcp-registry",
   "repository": {
     "url": "https://github.com/cheetah-trade/orla-cli",
     "source": "github"
@@ -20,7 +20,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "orla-cli",
-      "version": "0.3.0",
+      "version": "0.5.3",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

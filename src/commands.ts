@@ -8,7 +8,7 @@
 
 import { randomUUID } from "node:crypto";
 
-import { describe, noSpaces, spaceRequired } from "./errors.js";
+import { describe, noSpaces, spaceRequired, usage } from "./errors.js";
 import { callTool } from "./mcp.js";
 import { load, save } from "./store.js";
 
@@ -20,8 +20,40 @@ type Row = Record<string, unknown>;
  * A program reads `ok`, then branches on `error.code`; it never has to guess
  * from the shape of the data whether the call worked.
  */
-export function printJson(data: unknown): void {
-  process.stdout.write(`${JSON.stringify({ ok: true, data }, null, 2)}\n`);
+export function printJson(data: unknown, truncated?: Truncated): void {
+  const envelope = truncated ? { ok: true, data, truncated } : { ok: true, data };
+  process.stdout.write(`${JSON.stringify(envelope, null, 2)}\n`);
+}
+
+/**
+ * Rows Orla had and this answer does not carry. `shown` of `total`, and what
+ * the cut was: a list Orla caps at its ceiling (`truncated` in the tool's
+ * answer), a page cut to fit its size (`answer_truncated`), or the `--limit`.
+ */
+export type Truncated = { shown: number; total: number; reason: "server_cap" | "limit" | "incomplete" };
+
+/**
+ * Said on stderr, so a person sees it and the CSV on stdout stays clean.
+ *
+ * Until 0.5.3 every list threw `total` and `truncated` away: an export over a
+ * space with more rows than came back was a short file with nothing saying so,
+ * and a category list over Orla's ceiling left blank cells in the CSV.
+ */
+function sayCut(what: string, cut: Truncated | undefined, hint: string): void {
+  if (!cut) return;
+  process.stderr.write(`orla: showing ${cut.shown} of ${cut.total} ${what}; ${hint}\n`);
+}
+
+/** The cut a list tool reports, in either of the two shapes Orla answers with. */
+function cutOf(data: Record<string, unknown>, shown: number): Truncated | undefined {
+  for (const key of ["truncated", "answer_truncated"]) {
+    const note = data[key] as { total?: unknown } | undefined;
+    if (note && typeof note === "object") {
+      const total = typeof note.total === "number" ? note.total : undefined;
+      if (total !== undefined && total > shown) return { shown, total, reason: "server_cap" };
+    }
+  }
+  return undefined;
 }
 
 export function printFailure(err: unknown): void {
@@ -54,6 +86,20 @@ export function toCsv(rows: Row[], columns: string[]): string {
   return [columns.join(","), ...rows.map((r) => columns.map((c) => cell(r[c])).join(","))].join("\n");
 }
 
+/**
+ * `--limit` read before any request: a number Orla would refuse is said here,
+ * with the bound, instead of coming back as the server's validation error.
+ */
+export function parseLimit(raw: string | undefined, max?: number): number | undefined {
+  if (raw === undefined) return undefined;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 1) throw usage(`--limit must be a whole number from 1, got ${raw}`);
+  if (max !== undefined && n > max) {
+    throw usage(`--limit is at most ${max} for this command, got ${raw}; \`orla export\` reads every row`);
+  }
+  return n;
+}
+
 export async function whoami(): Promise<Row> {
   return (await callTool("orla_whoami", {})) as Row;
 }
@@ -82,8 +128,10 @@ export async function resolveSpace(flag?: string): Promise<string> {
 export async function accounts(spaceId: string, json: boolean): Promise<void> {
   const data = (await callTool("orla_list_accounts", { space_id: spaceId })) as { accounts?: Row[] };
   const rows = data.accounts ?? [];
-  if (json) return printJson(rows);
+  const cut = cutOf(data as Record<string, unknown>, rows.length);
+  if (json) return printJson(rows, cut);
   printTable(rows, ["id", "name", "kind", "currency", "balance"]);
+  sayCut("accounts", cut, "Orla lists at most that many here, the rest are in the app");
 }
 
 export async function spaces(json: boolean): Promise<void> {
@@ -99,25 +147,92 @@ export type TxFilter = {
   to?: string;
   search?: string;
   account?: string;
-  limit: number;
+  /** How many rows at most; undefined means every row the filters match. */
+  limit?: number;
 };
 
-async function fetchTransactions(filter: TxFilter): Promise<Row[]> {
+/**
+ * The most rows Orla serves in one call of `orla_list_transactions`
+ * (`LIST_CAP` on the server). Asking for more is refused, not trimmed.
+ */
+export const PAGE = 200;
+
+type TxPage = {
+  items?: Row[];
+  transactions?: Row[];
+  total?: number;
+  answer_truncated?: { next_offset?: number };
+};
+
+type Page = { rows: Row[]; total?: number; truncated: boolean; nextOffset?: number };
+
+async function fetchPage(filter: TxFilter, offset: number, limit: number): Promise<Page> {
   const data = (await callTool("orla_list_transactions", {
     space_id: filter.spaceId,
     date_from: filter.from,
     date_to: filter.to,
     search: filter.search,
     account_id: filter.account,
-    limit: filter.limit,
-  })) as { items?: Row[]; transactions?: Row[] };
-  return data.items ?? data.transactions ?? [];
+    limit,
+    offset,
+  })) as TxPage;
+  const cut = data.answer_truncated;
+  const next = cut?.next_offset;
+  return {
+    rows: data.items ?? data.transactions ?? [],
+    total: data.total,
+    truncated: cut !== undefined && cut !== null,
+    nextOffset: typeof next === "number" && Number.isInteger(next) && next > offset ? next : undefined,
+  };
+}
+
+/**
+ * Every row the filters match, a page of `PAGE` at a time.
+ *
+ * Until 0.5.1 `orla export` asked for 500 rows in one call, the server's
+ * ceiling is 200, and every export ended in a refusal. The next page starts
+ * where this one actually ended: at `answer_truncated.next_offset` when Orla
+ * names it, else after the rows that came back, never at offset + limit. A
+ * page Orla cut to fit its size ceiling is short without being the last, so
+ * the walk goes on to `total`; only an uncut short page, or an empty one,
+ * ends it when there is no total.
+ */
+async function fetchTransactions(filter: TxFilter): Promise<{ rows: Row[]; total?: number }> {
+  const rows: Row[] = [];
+  let offset = 0;
+  let total: number | undefined;
+  for (;;) {
+    const remaining = filter.limit === undefined ? PAGE : filter.limit - rows.length;
+    if (remaining <= 0) break;
+    const want = Math.min(PAGE, remaining);
+    const page = await fetchPage(filter, offset, want);
+    rows.push(...page.rows);
+    if (page.total !== undefined) total = page.total;
+    // nothing came back: going on would ask for the same window forever
+    if (page.rows.length === 0) break;
+    offset = page.nextOffset ?? offset + page.rows.length;
+    if (page.total !== undefined) {
+      if (offset >= page.total) break;
+    } else if (page.rows.length < want && !page.truncated) {
+      break;
+    }
+  }
+  return { rows, total };
+}
+
+/** What a transactions answer left out, against Orla's `total`. */
+function txCut(shown: number, total: number | undefined, limit: number | undefined): Truncated | undefined {
+  if (total === undefined || shown >= total) return undefined;
+  return { shown, total, reason: limit !== undefined && shown >= limit ? "limit" : "incomplete" };
 }
 
 export async function txList(filter: TxFilter, json: boolean): Promise<void> {
-  const rows = await fetchTransactions(filter);
-  if (json) return printJson(rows);
+  const limit = filter.limit ?? 50;
+  const { rows, total } = await fetchPage(filter, 0, limit);
+  const cut = txCut(rows.length, total, limit);
+  if (json) return printJson(rows, cut);
   printTable(rows, ["occurred_on", "kind", "signed_amount", "currency", "payee"]);
+  sayCut("transactions", cut, "`--limit` up to 200 shows more, `orla export` writes them all");
 }
 
 /**
@@ -128,25 +243,47 @@ export async function txList(filter: TxFilter, json: boolean): Promise<void> {
  * accountant, and "8c9767bd" is not an answer to "which card was this".
  */
 export async function txExport(filter: TxFilter, json = false): Promise<void> {
-  const [rows, accountNames, categoryNames] = await Promise.all([
+  const [{ rows, total }, accountNames, categoryNames] = await Promise.all([
     fetchTransactions(filter),
     namesOf("orla_list_accounts", "accounts", filter.spaceId),
     namesOf("orla_list_categories", "categories", filter.spaceId),
   ]);
+  const cut = txCut(rows.length, total, filter.limit);
   const named = rows.map((row) => ({
     ...row,
     account: accountNames.get(String(row["account_id"] ?? "")) ?? row["account_id"],
     category: categoryNames.get(String(row["category_id"] ?? "")) ?? "",
   }));
-  if (json) return printJson(named);
+  if (json) return printJson(named, cut);
   process.stdout.write(
     `${toCsv(named, ["occurred_on", "kind", "signed_amount", "currency", "payee", "note", "category", "account"])}\n`,
+  );
+  sayCut(
+    "transactions",
+    cut,
+    cut?.reason === "limit" ? "that is the `--limit`" : "Orla stopped answering pages before the end; run the export again",
   );
 }
 
 async function namesOf(tool: string, key: string, spaceId: string): Promise<Map<string, string>> {
-  const data = (await callTool(tool, { space_id: spaceId })) as Record<string, Row[]>;
-  return new Map((data[key] ?? []).map((row) => [String(row["id"]), String(row["name"] ?? "")]));
+  const data = (await callTool(tool, { space_id: spaceId })) as Record<string, unknown>;
+  const rows = (data[key] as Row[] | undefined) ?? [];
+  // A name Orla did not send leaves the id (accounts) or a blank (categories)
+  // in its column: said here, so the blank is not read as "uncategorised".
+  sayCut(key, cutOf(data, rows.length), `the rest show as ids or blanks in the ${key.replace(/s$/, "")} column`);
+  return new Map(rows.map((row) => [String(row["id"]), String(row["name"] ?? "")]));
+}
+
+/**
+ * Today on this machine's calendar, as YYYY-MM-DD.
+ *
+ * `toISOString()` is UTC: after midnight anywhere east of Greenwich, before it
+ * anywhere west, `orla tx add` booked yesterday or tomorrow, and on the first
+ * of the month the entry landed in the month before.
+ */
+export function localToday(now: Date = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 export async function txAdd(
@@ -181,5 +318,50 @@ export async function txAdd(
   const id = String((out.result ?? {})["transaction_id"] ?? "");
   process.stdout.write(
     `booked ${input.amount} ${input.payee ?? ""} ${id && `(${id})`}`.replace(/\s+/g, " ").trim() + "\n",
+  );
+}
+
+/** What `orla feedback` may send. `tool_error` is the AI client's own report and has no command. */
+export const FEEDBACK_KINDS = ["bug", "idea", "problem"] as const;
+export type FeedbackKind = (typeof FEEDBACK_KINDS)[number];
+/** The server's bounds on the text (`orla_send_feedback`), checked here before any request. */
+const FEEDBACK_MIN = 3;
+const FEEDBACK_MAX = 4000;
+
+export function isFeedbackKind(kind: string | undefined): kind is FeedbackKind {
+  return (FEEDBACK_KINDS as readonly string[]).includes(kind ?? "");
+}
+
+/**
+ * Send a bug, a problem or an idea to the Orla team, after the person has seen
+ * it. The text goes to people, so it is shown before it leaves: a terminal is
+ * asked, and without one only `--yes` sends, because a script that hangs on a
+ * question it cannot see is worse than one told what to pass.
+ */
+export async function feedback(
+  kind: FeedbackKind,
+  text: string,
+  options: { spaceId?: string; yes: boolean; json: boolean },
+  ask: (question: string) => Promise<boolean>,
+): Promise<void> {
+  const words = text.trim();
+  if (words.length < FEEDBACK_MIN || words.length > FEEDBACK_MAX) {
+    throw usage(`the text is ${FEEDBACK_MIN} to ${FEEDBACK_MAX} characters, got ${words.length}`);
+  }
+  if (!options.yes) {
+    if (!process.stdin.isTTY) throw usage("not a terminal to ask in: pass --yes to send without the question");
+    process.stderr.write(`To the Orla team, as ${kind}:\n\n${words}\n\n`);
+    if (!(await ask("Send this? [y/N] "))) {
+      if (options.json) return printJson({ sent: false });
+      process.stderr.write("not sent\n");
+      return;
+    }
+  }
+  const args: Record<string, unknown> = { kind, text: words };
+  if (options.spaceId) args["space_id"] = options.spaceId;
+  const answer = (await callTool("orla_send_feedback", args)) as Row;
+  if (options.json) return printJson(answer);
+  process.stderr.write(
+    answer["already_sent"] ? "already sent a moment ago; not sent twice\n" : "sent to the Orla team, thank you\n",
   );
 }

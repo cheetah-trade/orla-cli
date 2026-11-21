@@ -4,7 +4,11 @@ name: release
 # token exists to leak: npm mints a short-lived credential from this workflow's
 # OIDC identity, which is also what puts a provenance attestation on the
 # published version. Configure the trusted publisher once on npmjs.com for the
-# package `orla`: this repository, workflow `release.yml`.
+# package `orla-cli`: this repository, workflow `release.yml`.
+#
+# The same checks as ci.yml run here again, on the tagged commit, before
+# anything is published: a tag is not proof that CI was green on what it points
+# at, and the package is run through `npx` with a token to somebody's books.
 on:
   push:
     tags: ["v*"]
@@ -18,18 +22,42 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Publishing waits here for a required reviewer once the environment is
+    # protected in the repository settings (see RELEASING.md). Until then it is
+    # created on first use and passes straight through.
+    environment: npm-publish
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Pinned by commit, not by tag: this job holds `id-token: write`, and a
+      # moved tag would run someone else's code with the right to publish.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # the whole history, so the tag can be checked against main below
+          fetch-depth: 0
+      # A tag can be pushed on any commit, including one that never went
+      # through a pull request and its required checks. Only a commit already
+      # on main is released.
+      - name: Tagged commit is on main
+        run: |
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME points at $GITHUB_SHA, which is not on main"
+            exit 1
+          fi
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
       # Trusted publishing needs a recent npm; the one bundled with Node 22 is
-      # older than the feature.
-      - run: npm install -g npm@latest
-      - run: npm install
+      # older than the feature. A fixed version, not `latest`, for the reason
+      # the actions are pinned.
+      - run: npm install -g npm@11.21.2
+      # `ci`, not `install`: the lockfile as committed, or a failure.
+      - run: npm ci
       - run: npm run check
-      - run: npm run build
+      # Builds and runs node:test, the suite ci.yml runs on every push.
+      - run: npm test
+      - run: test -f dist/index.js
+      - run: npm pack --dry-run
       # The tag and the manifest have to agree, or `npm view orla` starts
       # disagreeing with `git tag` and nobody can tell which version is which.
       - name: Tag matches package.json

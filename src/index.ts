@@ -7,13 +7,16 @@
  * is a dozen commands with flags.
  */
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { createInterface } from "node:readline/promises";
 
-import { DEFAULT_API, login } from "./auth.js";
+import { DEFAULT_API, login, revoke } from "./auth.js";
 import {
   accounts,
+  feedback,
+  isFeedbackKind,
+  localToday,
+  PAGE,
+  parseLimit,
   printFailure,
   printJson,
   resolveSpace,
@@ -28,6 +31,7 @@ import { bridge, listTools } from "./mcp.js";
 import { need, optional, parse } from "./args.js";
 import type { Flags } from "./args.js";
 import { clear, load, save } from "./store.js";
+import { version } from "./version.js";
 import { COMMANDS, USAGE } from "./usage.js";
 
 /**
@@ -35,11 +39,6 @@ import { COMMANDS, USAGE } from "./usage.js";
  * places to write a version number is one place to forget it. `npm publish`
  * always ships package.json, so this resolves inside the installed package.
  */
-function version(): string {
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { version?: string };
-  return manifest.version ?? "unknown";
-}
 
 async function run(argv: string[]): Promise<void> {
   const { words, flags } = parse(argv);
@@ -69,9 +68,22 @@ async function run(argv: string[]): Promise<void> {
   }
 
   if (command === "logout") {
+    // Revoked on Orla first, then forgotten here, and forgotten whatever Orla
+    // said: a local copy kept because the server was down is the worse outcome.
+    const session = load();
+    const outcome = session ? await revoke(session) : null;
     clear();
-    if (json) return printJson({ forgotten: true });
-    process.stderr.write("session forgotten\n");
+    if (json) return printJson({ forgotten: true, ...(outcome ?? { revoked: false, reason: "no_session" }) });
+    if (!session) {
+      process.stderr.write("no session was stored on this machine\n");
+    } else if (outcome?.revoked) {
+      process.stderr.write("connection revoked on Orla and forgotten on this machine\n");
+    } else {
+      process.stderr.write(
+        `session forgotten on this machine only: ${outcome?.detail}.\n` +
+          "The tokens still work wherever a copy of them is. Revoke this connection in Orla under Agents.\n",
+      );
+    }
     return;
   }
 
@@ -103,6 +115,20 @@ async function run(argv: string[]): Promise<void> {
     return;
   }
 
+  if (command === "feedback") {
+    // `--yes "text"` would otherwise read the text as the flag's value
+    if (typeof flags["yes"] === "string") {
+      words.push(flags["yes"]);
+      flags["yes"] = true;
+    }
+    const kind = words[1];
+    const text = words.slice(2).join(" ");
+    if (!isFeedbackKind(kind) || !text.trim()) throw usage('orla feedback <bug|idea|problem> "text" [--yes] [--space <id>]');
+    // no default space here: a report names a space only when the person does
+    await feedback(kind, text, { spaceId: optional(flags, "space"), yes: flags["yes"] === true, json }, confirm);
+    return;
+  }
+
   if (command === "tools") {
     const tools = await listTools();
     if (json) return printJson(tools);
@@ -114,6 +140,16 @@ async function run(argv: string[]): Promise<void> {
     throw usage(`unknown command: ${command}\n\n${USAGE}`);
   }
 
+  // Before the space is resolved: a bad --limit is the command line's fault and
+  // says so without a single request.
+  const sub = words[1] ?? "list";
+  const limit =
+    command === "export"
+      ? parseLimit(optional(flags, "limit"))
+      : command === "tx" && sub === "list"
+        ? (parseLimit(optional(flags, "limit"), PAGE) ?? 50)
+        : undefined;
+
   const spaceId = await resolveSpace(optional(flags, "space"));
 
   if (command === "accounts") {
@@ -122,13 +158,12 @@ async function run(argv: string[]): Promise<void> {
   }
 
   if (command === "export") {
-    await txExport(filterFrom(spaceId, flags, 500), json);
+    await txExport(filterFrom(spaceId, flags, limit), json);
     return;
   }
 
-  const sub = words[1] ?? "list";
   if (sub === "list") {
-    await txList(filterFrom(spaceId, flags, 50), json);
+    await txList(filterFrom(spaceId, flags, limit), json);
     return;
   }
   if (sub === "add") {
@@ -138,7 +173,7 @@ async function run(argv: string[]): Promise<void> {
         account: need(flags, "account"),
         kind: optional(flags, "kind") ?? "expense",
         amount: need(flags, "amount"),
-        date: optional(flags, "date") ?? new Date().toISOString().slice(0, 10),
+        date: optional(flags, "date") ?? localToday(),
         payee: optional(flags, "payee"),
         note: optional(flags, "note"),
       },
@@ -149,15 +184,24 @@ async function run(argv: string[]): Promise<void> {
   throw usage(`unknown: orla tx ${sub}`);
 }
 
-function filterFrom(spaceId: string, flags: Flags, fallbackLimit: number) {
+function filterFrom(spaceId: string, flags: Flags, limit: number | undefined) {
   return {
     spaceId,
     from: optional(flags, "from"),
     to: optional(flags, "to"),
     search: optional(flags, "search"),
     account: optional(flags, "account"),
-    limit: Number(optional(flags, "limit") ?? fallbackLimit),
+    limit,
   };
+}
+
+async function confirm(question: string): Promise<boolean> {
+  const rl = createInterface({ input: process.stdin, output: process.stderr });
+  try {
+    return /^y(es)?$/i.test((await rl.question(question)).trim());
+  } finally {
+    rl.close();
+  }
 }
 
 async function whoamiSummary(): Promise<void> {

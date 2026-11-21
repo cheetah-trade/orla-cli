@@ -42,14 +42,15 @@ re-pointed by an update.
 | Command | What it does |
 |---|---|
 | `orla login [--api URL] [--agent]` | Connect this machine. Opens a browser. `--agent` asks for the door where a bot can be minted. |
-| `orla logout` | Forget the stored session. |
+| `orla logout` | Revoke the connection on Orla, then forget the stored session. |
 | `orla whoami` | Which connection this is and which spaces it reaches. |
 | `orla spaces` | The spaces in reach. |
 | `orla use <space-id>` | Remember one as the default. |
 | `orla accounts` | Accounts in the space. |
-| `orla tx list` | Transactions. `--from --to --search --account --limit`. |
+| `orla tx list` | Transactions. `--from --to --search --account --limit` (50 by default, at most 200). |
 | `orla tx add` | Record one. `--account --kind --amount --date [--payee --note]`. |
-| `orla export` | The same rows as CSV on stdout. |
+| `orla export` | Every matching row as CSV on stdout, read 200 at a time. `--limit` stops early. |
+| `orla feedback <bug\|idea\|problem> "text"` | Tell the Orla team about a bug, a problem or an idea. Shows the text and asks first; `--yes` sends without asking (scripts), `--space <id>` names the space it is about. Nothing in the books changes. |
 | `orla tools` | Which tools this connection was given. |
 | `orla mcp [--api URL]` | stdio bridge (below). |
 | `orla version` | Which version this is. |
@@ -65,6 +66,12 @@ With `--json`, every command answers with one envelope on stdout:
 { "ok": false, "error": { "code": "cli.not_connected", "message": "not connected: run `orla login` first" } }
 ```
 
+A list that left rows out (`accounts`, `tx list`, `export`) adds
+`"truncated": { "shown": 200, "total": 201, "reason": "server_cap" }` beside
+`data`; `reason` is `server_cap` (Orla's ceiling), `limit` (your `--limit`) or
+`incomplete` (Orla stopped answering pages before its total). Without `--json`
+the same is one line on stderr.
+
 Read `ok`, then branch on `error.code`. Codes that begin `cli.` are the CLI's
 own; any other code is Orla's, passed through unchanged, the same name the
 REST API and the MCP endpoint use. The exit status says which kind of failure
@@ -77,7 +84,7 @@ it was, so a shell script can branch without parsing anything:
 | 2 | the command line: unknown command, missing flag |
 | 3 | no session here, or one Orla no longer honours |
 | 4 | a space-scoped command with no space to work in, or several |
-| 5 | Orla could not be reached |
+| 5 | Orla could not be reached, did not answer in time, or is not taking calls right now |
 | 6 | Orla was reached and said no, or answered in a shape the CLI cannot read |
 | 7 | signing in was abandoned or came back wrong |
 
@@ -100,6 +107,9 @@ Environment variables the CLI reads:
 | Variable | Effect |
 |---|---|
 | `ORLA_NO_BROWSER=1` | never launch a browser; the sign-in URL is printed on stderr instead |
+| `ORLA_DEBUG=1` | one stderr line per request to Orla: method, host and path, status, time; never a header, body or query |
+| `ORLA_REQUEST_TIMEOUT_MS` | how long one request to Orla may take, in milliseconds (default 60000; a file upload or statement import gets twice that) |
+| `ORLA_SIGN_IN_WAIT_MS` | how long a sign-in waits for the browser to come back, in milliseconds (default 300000, five minutes) |
 | `ORLA_NO_KEYCHAIN=1` | keep the session in a `0600` file instead of the OS keychain (tests, CI, headless boxes) |
 | `XDG_CONFIG_HOME` | where that file lives (`<dir>/orla/session.json`) |
 
@@ -173,10 +183,10 @@ flow by hand.
 
 | Skill | What it does |
 |---|---|
-| `orla-categorize` | Sorts uncategorized rows into categories, in batches you confirm first. |
-| `orla-month-close` | Closes a month: spend, budgets that broke, what is unsorted, what the space is worth, what waits for a signature. Reads only. |
-| `orla-settle-up` | Balances and the settle-up plan in a shared space, and records shared expenses from your own account of a trip. |
-| `orla-counterparty-check` | What a business space knows about a counterparty or address before money goes out. |
+| `orla-categorize` | Sorts out what is still uncategorized: a preview of each batch, your yes, then exactly that batch applied. |
+| `orla-month-close` | Closes a month from Orla's own reports: spend, budgets that broke, what is unsorted, bills due, what the space is worth, what waits for a signature. Reads only. |
+| `orla-settle-up` | Who owes whom: the settle-up plan in a shared space, or what a space owes and is owed from its reports and supplier bills; records shared expenses and keeps the receipts in Documents. |
+| `orla-statement-import` | Books a bank statement: the rows Orla read, your yes, then exactly those rows. When the entry limit leaves room for only part of it, the newest rows go first. |
 | `orla` | The CLI from a terminal: the exact commands, the JSON envelope and exit codes, and where paying stops. |
 
 The plugin points at `https://app.orla.finance/api/mcp/personal`, which is the
@@ -185,8 +195,9 @@ what makes it true rather than a promise: payments, transfers and card details
 are withheld there and refused if asked for by name.
 
 Two things the skills lean on, worth knowing before you read them. A connection
-approved without "show full details" receives payees and addresses masked, which
-limits how much of a bank import can be categorized from four characters. And
+without full payment details (the person switches them on in Orla, under Agents) receives payees
+and addresses masked, which limits how much of a bank import can be categorized
+from four characters. And
 the tool list stops at 200 rows per call, with the true count beside it, so a
 busy month is read month by month rather than in one gulp.
 
@@ -225,7 +236,12 @@ exists it falls back to a `0600` file under your config directory and says so
 on stderr, because a refresh token quietly landing on disk is not something to
 discover later.
 
-`orla logout` clears both.
+`orla logout` clears both. Before that it asks Orla to revoke the connection
+(RFC 7009, at the `revocation_endpoint` Orla's OAuth metadata names), which
+ends this client's tokens on the server and leaves your other connections
+alone. When Orla offers no revocation endpoint or cannot be reached, the
+session is still forgotten here and the CLI says it was forgotten on this
+machine only.
 
 ## Development
 

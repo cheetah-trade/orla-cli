@@ -203,9 +203,14 @@ test("version, help, logout and use answer in the envelope too", async () => {
   strictEqual(answer.code, 0);
   deepStrictEqual(JSON.parse(answer.out), { ok: true, data: { default_space_id: "s9" } });
 
+  // Orla is unreachable here, so the session is forgotten on this machine only
+  // (test/logout.test.js covers the revocation itself).
   answer = await orla(["logout", "--json"], env);
   strictEqual(answer.code, 0);
-  deepStrictEqual(JSON.parse(answer.out), { ok: true, data: { forgotten: true } });
+  const out = JSON.parse(answer.out);
+  strictEqual(out.ok, true);
+  strictEqual(out.data.forgotten, true);
+  strictEqual(out.data.revoked, false);
   answer = await orla(["whoami", "--json"], env);
   strictEqual(answer.code, 3, "and the session is gone");
 });
