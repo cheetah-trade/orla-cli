@@ -31,3 +31,22 @@ jobs:
       # The Claude Desktop bundle builds here too: the release workflow must
       # not be the first place `zip` meets the manifest.
       - run: node scripts/build-mcpb.mjs
+
+  # The Claude Desktop bundle declares win32, so the suite runs there too: the
+  # sign-in opened a cut-off authorize URL on Windows and no job
+  # here could have seen it (review 20.11.2026, P2-4).
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # the tests read the skills and the manifest line by line, as shipped (LF)
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run build
+      - run: node --test test/*.test.js

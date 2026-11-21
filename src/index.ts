@@ -7,10 +7,7 @@
  * is a dozen commands with flags.
  */
 
-import { readFileSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { DEFAULT_API, login, revoke } from "./auth.js";
 import {
@@ -34,6 +31,7 @@ import { bridge, listTools } from "./mcp.js";
 import { need, optional, parse } from "./args.js";
 import type { Flags } from "./args.js";
 import { clear, load, save } from "./store.js";
+import { version } from "./version.js";
 import { COMMANDS, USAGE } from "./usage.js";
 
 /**
@@ -41,11 +39,6 @@ import { COMMANDS, USAGE } from "./usage.js";
  * places to write a version number is one place to forget it. `npm publish`
  * always ships package.json, so this resolves inside the installed package.
  */
-function version(): string {
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { version?: string };
-  return manifest.version ?? "unknown";
-}
 
 async function run(argv: string[]): Promise<void> {
   const { words, flags } = parse(argv);

@@ -84,7 +84,7 @@ it was, so a shell script can branch without parsing anything:
 | 2 | the command line: unknown command, missing flag |
 | 3 | no session here, or one Orla no longer honours |
 | 4 | a space-scoped command with no space to work in, or several |
-| 5 | Orla could not be reached |
+| 5 | Orla could not be reached, did not answer in time, or is not taking calls right now |
 | 6 | Orla was reached and said no, or answered in a shape the CLI cannot read |
 | 7 | signing in was abandoned or came back wrong |
 
@@ -107,6 +107,9 @@ Environment variables the CLI reads:
 | Variable | Effect |
 |---|---|
 | `ORLA_NO_BROWSER=1` | never launch a browser; the sign-in URL is printed on stderr instead |
+| `ORLA_DEBUG=1` | one stderr line per request to Orla: method, host and path, status, time; never a header, body or query |
+| `ORLA_REQUEST_TIMEOUT_MS` | how long one request to Orla may take, in milliseconds (default 60000; a file upload or statement import gets twice that) |
+| `ORLA_SIGN_IN_WAIT_MS` | how long a sign-in waits for the browser to come back, in milliseconds (default 300000, five minutes) |
 | `ORLA_NO_KEYCHAIN=1` | keep the session in a `0600` file instead of the OS keychain (tests, CI, headless boxes) |
 | `XDG_CONFIG_HOME` | where that file lives (`<dir>/orla/session.json`) |
 
