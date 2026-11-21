@@ -23,8 +23,9 @@ import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { platform } from "node:os";
 
-import { cancelled, notConnected, refused, sessionExpired, unreachable } from "./errors.js";
+import { cancelled, notConnected, refused, sessionExpired, timedOut, unreachable } from "./errors.js";
 import { load, save, withRefreshLock, type Session } from "./store.js";
+import { debug, userAgent } from "./version.js";
 
 //: The API's own origin, behind the `/api` ingress prefix — not the app's.
 //: `app.orla.finance/oauth/authorize` is the frontend's 404 page.
@@ -98,7 +99,24 @@ function openBrowser(url: string): void {
   }
 }
 
-type Listener = { port: number; callback: Promise<URLSearchParams> };
+/**
+ * How long a sign-in waits for the browser to come back.
+ *
+ * Without a limit `orla login` (and the bridge, which signs in on its own) sat
+ * on an open loopback port for as long as the process lived when the tab was
+ * closed. Five minutes covers a sign-up with a confirmation letter; past it the
+ * port is closed and the sign-in can simply be started again.
+ * `ORLA_SIGN_IN_WAIT_MS` shortens it for tests.
+ */
+export function signInWaitMs(): number {
+  const override = Number(process.env["ORLA_SIGN_IN_WAIT_MS"]);
+  return Number.isFinite(override) && override > 0 ? override : 5 * 60_000;
+}
+
+/** Whether a callback belongs to this sign-in: null if it does, the reason if not. */
+type CallbackCheck = (params: URLSearchParams) => string | null;
+
+type Listener = { port: number; callback: Promise<URLSearchParams>; close: () => void };
 
 /**
  * Listen on the first free published port.
@@ -107,9 +125,9 @@ type Listener = { port: number; callback: Promise<URLSearchParams> };
  * authorization URL that has not been built yet; `callback` settles later, when
  * the browser comes back.
  */
-async function startListener(): Promise<Listener> {
+async function startListener(check: CallbackCheck): Promise<Listener> {
   for (const port of PORTS) {
-    const listener = await bind(port);
+    const listener = await bind(port, check);
     if (listener) return listener;
   }
   // Only reachable if even port 0 could not bind, which is the machine refusing
@@ -117,7 +135,7 @@ async function startListener(): Promise<Listener> {
   throw cancelled("could not open a local port to finish signing in; check that nothing is blocking loopback sockets");
 }
 
-function bind(port: number): Promise<Listener | null> {
+function bind(port: number, check: CallbackCheck): Promise<Listener | null> {
   return new Promise((resolve, reject) => {
     let settle: (params: URLSearchParams) => void = () => {};
     let fail: (err: Error) => void = () => {};
@@ -130,6 +148,16 @@ function bind(port: number): Promise<Listener | null> {
       const url = new URL(req.url ?? "/", `http://127.0.0.1:${port}`);
       if (url.pathname !== "/callback") {
         res.writeHead(404).end();
+        return;
+      }
+      // Checked BEFORE the port closes: a request that does not belong to this
+      // sign-in (another tab, a stale link, a page on this machine guessing the
+      // port) used to close the listener and end the real sign-in with it.
+      const wrong = check(url.searchParams);
+      if (wrong) {
+        process.stderr.write(`orla: ignored a sign-in callback that is not this one (${wrong})\n`);
+        res.writeHead(400, { "content-type": "text/html; charset=utf-8" });
+        res.end("<!doctype html><meta charset=utf-8><p>This link is not the sign-in this terminal is waiting for.</p>");
         return;
       }
       res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
@@ -154,13 +182,25 @@ function bind(port: number): Promise<Listener | null> {
       // request back would put `127.0.0.1:0` in the redirect URI.
       const bound = server.address();
       const actual = typeof bound === "object" && bound ? bound.port : port;
-      resolve({ port: actual, callback });
+      resolve({ port: actual, callback, close: () => server.close() });
     });
   });
 }
 
+/** How long one request to Orla may take before it is given up on: 60 s, `ORLA_REQUEST_TIMEOUT_MS` for tests. */
+export function requestTimeoutMs(): number {
+  const override = Number(process.env["ORLA_REQUEST_TIMEOUT_MS"]);
+  return Number.isFinite(override) && override > 0 ? override : 60_000;
+}
+
 /**
- * `fetch`, but a network failure says what it could not reach.
+ * `fetch`, but a network failure says what it could not reach, and nothing
+ * waits forever.
+ *
+ * A request with no deadline held the bridge, which relays one line at a time,
+ * for as long as the server took: a call stuck on Orla's side stuck every call
+ * after it. A timeout is reported as `cli.timeout`, not as unreachable: the
+ * request may have landed, and a write is retried with its idempotency key.
  *
  * Undici throws a bare `fetch failed` for DNS, TLS and refused connections
  * alike, and that message reaches the user unchanged: `orla: fetch failed`.
@@ -168,17 +208,37 @@ function bind(port: number): Promise<Listener | null> {
  * session stored against an Orla this machine can no longer reach, which the
  * user has no way to guess.
  */
-export async function reach(url: string, init: RequestInit): Promise<Response> {
+export async function reach(url: string, init: RequestInit, timeoutMs: number = requestTimeoutMs()): Promise<Response> {
+  const host = (() => {
+    try {
+      return new URL(url).host;
+    } catch {
+      return url;
+    }
+  })();
+  const started = Date.now();
+  const where = (() => {
+    try {
+      const u = new URL(url);
+      return `${u.host}${u.pathname}`;
+    } catch {
+      return host;
+    }
+  })();
   try {
-    return await fetch(url, init);
+    const headers = new Headers(init.headers);
+    headers.set("user-agent", userAgent());
+    const res = await fetch(url, { ...init, headers, signal: AbortSignal.timeout(timeoutMs) });
+    debug(`${init.method ?? "GET"} ${where} -> ${res.status} in ${Date.now() - started} ms`);
+    return res;
   } catch (err) {
-    const host = (() => {
-      try {
-        return new URL(url).host;
-      } catch {
-        return url;
-      }
-    })();
+    debug(`${init.method ?? "GET"} ${where} -> ${(err as Error)?.name ?? "error"} after ${Date.now() - started} ms`);
+    if (err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError")) {
+      throw timedOut(
+        `${host} did not answer within ${Math.round(timeoutMs / 1000)} s; ` +
+          "a write may still have landed, so check before repeating it",
+      );
+    }
     const why = err instanceof Error && err.cause instanceof Error ? err.cause.message : (err as Error)?.message;
     throw unreachable(
       `cannot reach ${host}${why ? ` (${why})` : ""}. ` +
@@ -194,7 +254,7 @@ async function postForm(url: string, body: Record<string, string>): Promise<Reco
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams(body).toString(),
   });
-  const json = (await res.json()) as Record<string, string>;
+  const json = (await res.json().catch(() => ({}))) as Record<string, string>;
   if (!res.ok) {
     const why = json["error_description"] || json["error"] || `token endpoint said ${res.status}`;
     // `invalid_grant` is the token endpoint saying the refresh token is dead:
@@ -211,9 +271,19 @@ export async function login(apiBase: string, door: Door = "personal"): Promise<S
   const state = randomBytes(16).toString("base64url");
   const resource = `${apiBase}${DOOR_PATHS[door]}`;
 
+  // RFC 9207: Orla names itself in `iss` on the redirect. A callback that names
+  // another issuer is a mix-up (a code minted elsewhere), not this sign-in.
+  const issuer = apiBase.replace(/\/+$/, "");
+  const check: CallbackCheck = (params) => {
+    if (params.get("state") !== state) return "it carried a different state";
+    const iss = params.get("iss");
+    if (iss !== null && iss.replace(/\/+$/, "") !== issuer) return `it came from ${iss}, not ${issuer}`;
+    return null;
+  };
+
   // The port is only known once something is listening, so the listener binds
   // before the URL is built and the browser opens after.
-  const listener = await startListener();
+  const listener = await startListener(check);
   const redirectUri = `http://127.0.0.1:${listener.port}/callback`;
   const authorize = new URL(`${apiBase}/oauth/authorize`);
   authorize.search = new URLSearchParams({
@@ -230,10 +300,22 @@ export async function login(apiBase: string, door: Door = "personal"): Promise<S
   process.stderr.write(`Opening ${authorize.toString()}\n`);
   openBrowser(authorize.toString());
 
-  const params = await listener.callback;
-  if (params.get("state") !== state) {
-    throw cancelled("the callback carried a different state; nothing was connected");
-  }
+  const waitMs = signInWaitMs();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const params = await Promise.race([
+    listener.callback,
+    new Promise<never>((_, fail) => {
+      timer = setTimeout(() => {
+        listener.close();
+        fail(
+          cancelled(
+            `the browser did not come back within ${Math.round(waitMs / 60_000) || 1} min; ` +
+              "nothing was connected, sign in again when ready",
+          ),
+        );
+      }, waitMs);
+    }),
+  ]).finally(() => clearTimeout(timer));
   const code = params.get("code");
   if (!code) throw cancelled(params.get("error_description") ?? params.get("error") ?? "no code came back");
 
@@ -266,14 +348,18 @@ const fresh = (session: Session): boolean => session.expiresAt - 60_000 > Date.n
  * waited, its tokens are used as they are. Presenting the old refresh token a
  * second time would end the whole connection on Orla's side.
  */
-export async function accessToken(): Promise<{ token: string; session: Session }> {
+export async function accessToken(rejected?: string): Promise<{ token: string; session: Session }> {
   const session = load();
   if (!session) throw notConnected();
-  if (fresh(session)) return { token: session.accessToken, session };
+  // `rejected` is a token Orla just answered 401 to: its clock and ours disagree,
+  // or it was ended on Orla's side. Refresh it even if it looks fresh here,
+  // unless another process already replaced it while this one waited.
+  const stale = (s: Session): boolean => !fresh(s) || (rejected !== undefined && s.accessToken === rejected);
+  if (!stale(session)) return { token: session.accessToken, session };
   return withRefreshLock(async () => {
     const current = load();
     if (!current) throw notConnected();
-    if (fresh(current)) return { token: current.accessToken, session: current };
+    if (!stale(current)) return { token: current.accessToken, session: current };
     const tokens = await postForm(`${current.apiBase}/oauth/token`, {
       grant_type: "refresh_token",
       refresh_token: current.refreshToken,
@@ -318,7 +404,10 @@ async function revocationEndpoint(apiBase: string): Promise<string | null> {
   for (const doc of ["oauth-authorization-server", "openid-configuration"]) {
     let res: Response;
     try {
-      res = await fetch(`${apiBase}/.well-known/${doc}`, { signal: AbortSignal.timeout(REVOKE_TIMEOUT_MS) });
+      res = await fetch(`${apiBase}/.well-known/${doc}`, {
+        headers: { "user-agent": userAgent() },
+        signal: AbortSignal.timeout(REVOKE_TIMEOUT_MS),
+      });
     } catch {
       throw unreachable(`cannot reach ${apiBase}`);
     }
@@ -364,7 +453,7 @@ export async function revoke(session: Session): Promise<Revocation> {
   try {
     res = await fetch(endpoint, {
       method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
+      headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": userAgent() },
       body: new URLSearchParams({
         token,
         token_type_hint: session.refreshToken ? "refresh_token" : "access_token",

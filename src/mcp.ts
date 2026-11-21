@@ -13,21 +13,50 @@
  * not locked out of the product.
  */
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";
-import { fileURLToPath } from "node:url";
 
-import { accessToken, DEFAULT_API, doorPath, login, reach } from "./auth.js";
-import { badAnswer, describe, refused } from "./errors.js";
+import { accessToken, DEFAULT_API, doorPath, login, reach, requestTimeoutMs } from "./auth.js";
+import { badAnswer, describe, doorClosed, rateLimited, refused, sessionExpired } from "./errors.js";
 import { clear, load } from "./store.js";
+import { version } from "./version.js";
 
 export const PROTOCOL_VERSION = "2026-07-28";
 
 export type Rpc = { jsonrpc: "2.0"; id?: unknown; method?: string; params?: unknown; result?: unknown; error?: unknown };
 
-async function post(body: unknown, extraHeaders: Record<string, string> = {}): Promise<Rpc> {
-  const { token, session } = await accessToken();
+/** Tools that carry a file: they get twice the ordinary deadline. */
+const SLOW_TOOLS = new Set(["orla_upload_document", "orla_import_statement", "orla_preview_statement_import"]);
+
+/** The deadline for one JSON-RPC request: 120 s for a file, 60 s for the rest. */
+export function deadlineFor(body: unknown): number {
+  const params = (body as { method?: string; params?: { name?: unknown } } | null)?.params;
+  const name = (body as { method?: string } | null)?.method === "tools/call" ? params?.name : undefined;
+  return typeof name === "string" && SLOW_TOOLS.has(name) ? 2 * requestTimeoutMs() : requestTimeoutMs();
+}
+
+/** `Retry-After` in seconds, from either form RFC 9110 allows; undefined when absent or unreadable. */
+export function retryAfter(res: Response): number | undefined {
+  const raw = res.headers.get("retry-after");
+  if (!raw) return undefined;
+  if (/^\d+$/.test(raw.trim())) return Number(raw.trim());
+  const when = Date.parse(raw);
+  return Number.isNaN(when) ? undefined : Math.max(0, Math.ceil((when - Date.now()) / 1000));
+}
+
+/**
+ * One JSON-RPC request to the door.
+ *
+ * The HTTP status is read before the body. Until 0.5.3 it was not: a 401 came
+ * out as "Orla refused the call" with exit 6 instead of a sign-in, and a 429 or
+ * 503 (whose body is a JSON-RPC error with `id: null`) went to the bridge's
+ * client as an answer to nobody. Now a 401 refreshes once and then says the
+ * session is over (the bridge signs in again on that), and 429 and 503 become
+ * `cli.rate_limited` and `cli.door_closed` with Orla's `Retry-After`. Nothing
+ * here repeats a call by itself: a call refused with 401 or 429 never ran, and
+ * the caller repeats it with the same body, so the same idempotency key.
+ */
+async function post(body: unknown, extraHeaders: Record<string, string> = {}, rejected?: string): Promise<Rpc> {
+  const { token, session } = await accessToken(rejected);
   const res = await reach(`${session.apiBase}${doorPath(session)}`, {
     method: "POST",
     headers: {
@@ -38,7 +67,20 @@ async function post(body: unknown, extraHeaders: Record<string, string> = {}): P
       ...extraHeaders,
     },
     body: JSON.stringify(body),
-  });
+  }, deadlineFor(body));
+  if (res.status === 401) {
+    await res.body?.cancel();
+    if (rejected === undefined) return post(body, extraHeaders, token);
+    throw sessionExpired("Orla refused the token even after a refresh");
+  }
+  if (res.status === 429) {
+    await res.body?.cancel();
+    throw rateLimited(retryAfter(res));
+  }
+  if (res.status === 503) {
+    await res.body?.cancel();
+    throw doorClosed(retryAfter(res));
+  }
   if (res.status === 202) return { jsonrpc: "2.0" };
   const text = await res.text();
   if (!text) throw badAnswer(`Orla answered ${res.status} with an empty body`);
@@ -86,11 +128,6 @@ export async function listTools(): Promise<{ name: string; description?: string 
   return result?.tools ?? [];
 }
 
-function version(): string {
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { version?: string };
-  return manifest.version ?? "unknown";
-}
 
 const line = (value: unknown): void => {
   process.stdout.write(`${JSON.stringify(value)}\n`);
@@ -196,6 +233,10 @@ class SignIn {
 export async function bridge(apiBase: string = DEFAULT_API): Promise<void> {
   const signIn = new SignIn(apiBase);
   const lines = createInterface({ input: process.stdin });
+  // Requests to Orla still go one at a time, in the order they came, but the
+  // reader no longer waits for them: a call stuck on Orla's side held every
+  // line behind it, `ping` included, and the client took the bridge for dead.
+  let relayed: Promise<void> = Promise.resolve();
   for await (const raw of lines) {
     const trimmed = raw.trim();
     if (!trimmed) continue;
@@ -206,27 +247,42 @@ export async function bridge(apiBase: string = DEFAULT_API): Promise<void> {
       line({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } });
       continue;
     }
+    // The bridge is the server the client talks to, so it answers `ping`
+    // itself, at once, whatever is in flight.
+    if (request.method === "ping" && request.id !== undefined && request.id !== null) {
+      line({ jsonrpc: "2.0", id: request.id, result: {} });
+      continue;
+    }
     if (!signIn.ready()) {
       const local = signIn.answer(request);
       if (local) line(local);
       continue;
     }
-    try {
-      const headers: Record<string, string> = request.method ? { "Mcp-Method": String(request.method) } : {};
-      const answer = await post(request, headers);
-      if (request.id === undefined || request.id === null) continue;
-      line(answer);
-    } catch (err) {
-      const { code, message } = describe(err);
-      if (code === "cli.session_expired") {
-        process.stderr.write(`orla: ${message}; signing in again\n`);
-        signIn.expired();
-        const local = signIn.answer(request);
-        if (local) line(local);
-        continue;
-      }
-      if (request.id === undefined || request.id === null) continue;
-      line({ jsonrpc: "2.0", id: request.id, error: { code: -32000, message, data: { code } } });
+    relayed = relayed.then(() => relay(request, signIn));
+  }
+  await relayed;
+}
+
+async function relay(request: Rpc, signIn: SignIn): Promise<void> {
+  const answersTo = request.id !== undefined && request.id !== null;
+  try {
+    const headers: Record<string, string> = request.method ? { "Mcp-Method": String(request.method) } : {};
+    const answer = await post(request, headers);
+    if (!answersTo) return;
+    // A protocol error Orla could not tie to a request comes back with
+    // `id: null`; the client is waiting on this id and would wait forever.
+    line(answer.id === undefined || answer.id === null ? { ...answer, id: request.id } : answer);
+  } catch (err) {
+    const { code, message, details } = describe(err);
+    if (code === "cli.session_expired") {
+      process.stderr.write(`orla: ${message}; signing in again\n`);
+      signIn.expired();
+      const local = signIn.answer(request);
+      if (local) line(local);
+      return;
     }
+    if (!answersTo) return;
+    const data = details && typeof details === "object" ? { code, ...(details as object) } : { code };
+    line({ jsonrpc: "2.0", id: request.id, error: { code: -32000, message, data } });
   }
 }

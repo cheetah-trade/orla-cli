@@ -164,21 +164,59 @@ test("when the person finishes in the browser, the client is told and the relay 
   }
 });
 
-test("a state that comes back wrong is refused, said out loud, and does not connect", async () => {
+test("a callback with the wrong state is refused, said out loud, and the sign-in keeps waiting", async () => {
   const stub = await stubOrla();
   const b = bridge(stub.apiBase, isolated());
   try {
     b.send({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {} } });
     await b.until((l) => l.id === 1);
     const [, opened] = await b.stderrUntil(/Opening (\S+)/);
-    const back = new URL(new URL(opened).searchParams.get("redirect_uri"));
-    back.searchParams.set("code", "c0de");
-    back.searchParams.set("state", "forged");
-    await fetch(back);
-    await b.stderrUntil(/sign-in did not complete \(the callback carried a different state/);
+    const authorize = new URL(opened);
+    const forged = new URL(authorize.searchParams.get("redirect_uri"));
+    forged.searchParams.set("code", "c0de");
+    forged.searchParams.set("state", "forged");
+    strictEqual((await fetch(forged)).status, 400);
+    await b.stderrUntil(/ignored a sign-in callback that is not this one \(it carried a different state/);
     strictEqual(stub.seen.tokenGrants.length, 0, "no code was exchanged");
     b.send({ jsonrpc: "2.0", id: 2, method: "tools/list" });
     deepStrictEqual((await b.until((l) => l.id === 2)).result, { tools: [] }, "still not signed in");
+
+    // Until 0.5.3 the forged callback closed the port and the real one, a moment
+    // later, found nothing listening.
+    const back = new URL(authorize.searchParams.get("redirect_uri"));
+    back.searchParams.set("code", "c0de");
+    back.searchParams.set("state", authorize.searchParams.get("state"));
+    strictEqual((await fetch(back)).status, 200);
+    await b.until((l) => l.method === "notifications/tools/list_changed");
+    strictEqual(stub.seen.tokenGrants.length, 1);
+  } finally {
+    b.kill();
+    stub.close();
+  }
+});
+
+test("a callback that names another issuer (RFC 9207) is refused like a wrong state", async () => {
+  const stub = await stubOrla();
+  const b = bridge(stub.apiBase, isolated());
+  try {
+    b.send({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {} } });
+    await b.until((l) => l.id === 1);
+    const [, opened] = await b.stderrUntil(/Opening (\S+)/);
+    const authorize = new URL(opened);
+    const mixed = new URL(authorize.searchParams.get("redirect_uri"));
+    mixed.searchParams.set("code", "c0de");
+    mixed.searchParams.set("state", authorize.searchParams.get("state"));
+    mixed.searchParams.set("iss", "https://evil.example");
+    strictEqual((await fetch(mixed)).status, 400);
+    await b.stderrUntil(/it came from https:\/\/evil\.example/);
+    strictEqual(stub.seen.tokenGrants.length, 0);
+
+    const back = new URL(authorize.searchParams.get("redirect_uri"));
+    back.searchParams.set("code", "c0de");
+    back.searchParams.set("state", authorize.searchParams.get("state"));
+    back.searchParams.set("iss", `${stub.apiBase}/`);
+    strictEqual((await fetch(back)).status, 200, "Orla's own issuer, trailing slash or not");
+    await b.until((l) => l.method === "notifications/tools/list_changed");
   } finally {
     b.kill();
     stub.close();
