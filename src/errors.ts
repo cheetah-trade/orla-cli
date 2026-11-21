@@ -75,6 +75,33 @@ export const spaceRequired = (choices: { id: string; name: string }[]): CliError
 
 export const unreachable = (message: string): CliError => new CliError("cli.unreachable", EXIT.network, message);
 
+/** Orla was reached and did not answer in time. Nothing says whether a write landed: retry it with the same key. */
+export const timedOut = (message: string): CliError => new CliError("cli.timeout", EXIT.network, message);
+
+const later = (seconds: number | undefined): string =>
+  seconds === undefined ? "try again in a moment" : `try again in ${seconds} s`;
+
+/**
+ * Orla's brake said "not now" (HTTP 429). Nothing was done, so the same call
+ * can go again once `retry_after` seconds have passed.
+ */
+export const rateLimited = (seconds: number | undefined): CliError =>
+  new CliError(
+    "cli.rate_limited",
+    EXIT.refused,
+    `Orla is slowing this connection down: ${later(seconds)}`,
+    seconds === undefined ? undefined : { retry_after: seconds },
+  );
+
+/** The door is closed for now (HTTP 503): switched off, or Orla is restarting. */
+export const doorClosed = (seconds: number | undefined): CliError =>
+  new CliError(
+    "cli.door_closed",
+    EXIT.network,
+    `Orla is not taking calls right now: ${later(seconds)}`,
+    seconds === undefined ? undefined : { retry_after: seconds },
+  );
+
 /** Orla said no. `code` is the server's own, so it is not prefixed. */
 export const refused = (code: string, message: string, details?: unknown): CliError =>
   new CliError(code, EXIT.refused, message, details);

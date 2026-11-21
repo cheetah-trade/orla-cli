@@ -115,8 +115,8 @@ Exit codes:
 | 2 | the command line: unknown command, missing flag | `cli.usage` |
 | 3 | no session here, or one Orla no longer honours | `cli.not_connected`, `cli.session_expired` |
 | 4 | a space-scoped command with no space, or several | `cli.no_spaces`, `cli.space_required` |
-| 5 | Orla could not be reached | `cli.unreachable` |
-| 6 | Orla was reached and said no, or answered in a shape the CLI cannot read | the server's own code (`validation_error`, `not_found`, `mcp.unknown_tool`, ...), or `cli.bad_answer` |
+| 5 | Orla could not be reached, did not answer in time, or is not taking calls right now | `cli.unreachable`, `cli.timeout`, `cli.door_closed` (`error.details.retry_after` in seconds) |
+| 6 | Orla was reached and said no, or answered in a shape the CLI cannot read | the server's own code (`validation_error`, `not_found`, `mcp.unknown_tool`, ...), `cli.rate_limited` (`error.details.retry_after` in seconds), or `cli.bad_answer` |
 | 7 | signing in was abandoned or came back wrong | `cli.sign_in_cancelled` |
 
 Codes starting `cli.` are minted by the CLI. Any other code is the server's
@@ -280,6 +280,9 @@ Orla. A name the space already uses is refused; use that account instead. The pe
 | Variable | Effect |
 |---|---|
 | `ORLA_NO_BROWSER=1` | never launch a browser; the sign-in URL is printed on stderr instead |
+| `ORLA_DEBUG=1` | one stderr line per request to Orla: method, host and path, status, time; never a header, body or query |
+| `ORLA_REQUEST_TIMEOUT_MS` | how long one request to Orla may take, in milliseconds (default 60000; a file upload or statement import gets twice that) |
+| `ORLA_SIGN_IN_WAIT_MS` | how long a sign-in waits for the browser to come back, in milliseconds (default 300000, five minutes) |
 | `ORLA_NO_KEYCHAIN=1` | keep the session in a `0600` file instead of the OS keychain (tests, CI, headless boxes) |
 | `XDG_CONFIG_HOME` | where that file lives (`<dir>/orla/session.json`) |
 
