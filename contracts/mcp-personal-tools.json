@@ -128,6 +128,29 @@
     },
     {
       "arguments": [
+        "account_id",
+        "amount_max",
+        "amount_min",
+        "category_id",
+        "contact_id",
+        "idempotency_key",
+        "match_type",
+        "note_pattern",
+        "pattern",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_create_category_rule",
+      "readOnly": false,
+      "required": [
+        "category_id",
+        "idempotency_key",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "billing_email",
         "cc_emails",
         "city",
@@ -272,6 +295,17 @@
     },
     {
       "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_category_rules",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "q",
         "space_id"
       ],
@@ -392,6 +426,26 @@
       "name": "orla_owed",
       "readOnly": true,
       "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "account_id",
+        "amount_max",
+        "amount_min",
+        "category_id",
+        "contact_id",
+        "match_type",
+        "note_pattern",
+        "pattern",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_preview_category_rule",
+      "readOnly": true,
+      "required": [
+        "category_id",
         "space_id"
       ]
     },
