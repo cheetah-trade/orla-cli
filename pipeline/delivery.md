@@ -1,4 +1,4 @@
-# Delivery of orla-cli (counted 2026-11-21 06:00 from Task Floor's run logs and linked pull requests; counts only)
+# Delivery of orla-cli (counted 2026-11-22 06:00 from Task Floor's run logs and linked pull requests; counts only)
 
 KPI 1: pull request wait to merge (open → merge). KPI 2: conversion to merge = merged / (merged + closed unmerged + reverted). Goal for nudges: zero (answers, permissions, «go on», status checks, restarts, stops for the owner). Outcomes: change failure = (reverted + hotfixes) / (merged + reverted); rework = finished work the owner sent back to verify or restart, or another task continued; time to restore = a reverted change's merge to its revert's.
 
@@ -6,8 +6,7 @@ KPI 1: pull request wait to merge (open → merge). KPI 2: conversion to merge =
 
 | Agent | Tasks | Output tokens | PRs opened | Merged | Wait median h | Wait mean h | Conversion | Closed / reverted / open / no PR | Nudges | Runaway | Rating | Change failure | Rework | Restore h |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Sessions outside Task Floor | 0 | 0 | 2 | 2 | 0.1 | 0.1 | — | 0 / 0 / 0 / 0 | 0 | 0 | — | — | — | — |
-| **All** | 0 | 0 | 2 | 2 | 0.1 | 0.1 | — | 0 / 0 / 0 / 0 | 0 | 0 | — | — | — | — |
+| — | 0 | | | | | | | | | | | | | |
 
 ## Last 7 days
 
@@ -18,7 +17,7 @@ KPI 1: pull request wait to merge (open → merge). KPI 2: conversion to merge =
 
 ## Pull requests Delivery sees
 
-Of the people's pull requests merged in the last 7 days (bots left out), 4 of 12 (33%) are linked to a task or a session (by a link in the conversation or by its claude/… or codex/… branch). Not seen: cheetah-trade/orla-cli#22, cheetah-trade/orla-cli#21, cheetah-trade/orla-cli#20, cheetah-trade/orla-cli#33, cheetah-trade/orla-cli#32, cheetah-trade/orla-cli#27, cheetah-trade/orla-cli#26, cheetah-trade/orla-cli#24.
+Of the people's pull requests merged in the last 7 days (bots left out), 4 of 17 (24%) are linked to a task or a session (by a link in the conversation or by its claude/… or codex/… branch). Not seen: cheetah-trade/orla-cli#22, cheetah-trade/orla-cli#21, cheetah-trade/orla-cli#20, cheetah-trade/orla-cli#33, cheetah-trade/orla-cli#32, cheetah-trade/orla-cli#27, cheetah-trade/orla-cli#26, cheetah-trade/orla-cli#24, cheetah-trade/orla-cli#38, cheetah-trade/orla-cli#37.
 
 ## Context compactions by model and effort
 
@@ -46,10 +45,12 @@ Work as a share of task time that was not «off» (owner: waits for the owner, i
 
 ## What hangs now
 
+- offline: «Anton MacBook Air Old» (member-1cf130e8): Anton MacBook Air Old silent since 22.11 05:46
 - offline: «Roman Dubina's Mac» (member-4c77dcbf): Roman Dubina's Mac silent since 13.10 19:51
+- offline: «Anton MacBook Pro Old» (member-6d504cb7): Anton MacBook Pro Old silent since 22.11 04:04
 - offline: «Gera Skalski's Mac» (member-c20323c4): Gera Skalski's Mac silent since 22.10 16:09
 - offline: «Gera Skalski's Mac» (member-d7405858): Gera Skalski's Mac silent since 22.10 15:59
-- offline: «Irina's Mac» (member-fd1d09bf): Irina's Mac silent since 21.11 05:54
+- offline: «Irina's Mac» (member-fd1d09bf): Irina's Mac silent since 22.11 04:26
 
 ## Quality by agent and model
 
@@ -67,17 +68,17 @@ Outcomes by how many other runs were going as a run started (last 30 days): on i
 
 | Load | Other runs | Runs | Failed | Stopped by you | Rating (n) | As is (n) | Claims contradicted (n) |
 |---|---|---|---|---|---|---|---|
-| Same subscription | 0 | 1665 | 2% | 0% | — | — | 3% (327) |
-| Same subscription | 1 | 1348 | 2% | 0% | — | — | 5% (222) |
-| Same subscription | 2–3 | 1341 | 3% | 0% | — | — | 3% (306) |
-| Same Mac | 0 | 1252 | 3% | 0% | — | — | 1% (226) |
-| Same Mac | 1 | 1415 | 2% | 0% | — | — | 5% (235) |
-| Same Mac | 2–3 | 1338 | 2% | 0% | — | — | 3% (292) |
+| Same subscription | 0 | 1650 | 2% | 0% | — | — | 3% (327) |
+| Same subscription | 1 | 1228 | 2% | 0% | — | — | 5% (222) |
+| Same subscription | 2–3 | 1238 | 3% | 0% | — | — | 3% (302) |
+| Same Mac | 0 | 1202 | 3% | 0% | — | — | 1% (224) |
+| Same Mac | 1 | 1268 | 2% | 0% | — | — | 5% (233) |
+| Same Mac | 2–3 | 1297 | 2% | 0% | — | — | 3% (292) |
 | Same Mac | 4–7 | 349 | 4% | 0% | — | — | 4% (102) |
-| Same agent | 0 | 1486 | 2% | 0% | — | — | 4% (326) |
-| Same agent | 1 | 616 | 2% | 0% | — | — | 3% (113) |
-| Same agent | 2–3 | 410 | 4% | 0% | — | — | 7% (76) |
-| Same agent | 4–7 | 6 | 17% | 0% | — | — | — |
+| Same agent | 0 | 1373 | 2% | 0% | — | — | 4% (323) |
+| Same agent | 1 | 554 | 3% | 0% | — | — | 3% (113) |
+| Same agent | 2–3 | 385 | 4% | 0% | — | — | 7% (76) |
+| Same agent | 4–7 | 5 | 20% | 0% | — | — | — |
 
 
 ## Runs by agent, model and effort
