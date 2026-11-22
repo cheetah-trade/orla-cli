@@ -1093,6 +1093,19 @@
     },
     {
       "arguments": [
+        "import_mark",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_preview_import_undo",
+      "readOnly": true,
+      "required": [
+        "import_mark",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "category_id",
         "clear_category",
         "space_id",
@@ -1237,6 +1250,24 @@
       "name": "orla_split_balances",
       "readOnly": true,
       "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "idempotency_key",
+        "import_mark",
+        "preview_id",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_undo_import",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "import_mark",
+        "preview_id",
         "space_id"
       ]
     },
