@@ -482,7 +482,6 @@
     {
       "arguments": [
         "city",
-        "contact_email",
         "contact_id",
         "country",
         "idempotency_key",
