@@ -42,6 +42,56 @@
         "brandColor": "#0B0B0C",
         "composerIcon": "./assets/icon.png",
         "logo": "./assets/logo.png"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Net worth across the user's accounts",
+              "prompt": "What is my net worth?",
+              "tools_triggered": "orla_net_worth",
+              "expected_behavior": "The answer gives the total and says how many accounts were left out and which currencies had no rate."
+            },
+            {
+              "description": "Last month's transactions",
+              "prompt": "Show my transactions from last month.",
+              "tools_triggered": "orla_list_transactions",
+              "expected_behavior": "A long list comes back shortened, with the number returned and the real total."
+            },
+            {
+              "description": "Budgets against their limits",
+              "prompt": "How are my budgets doing?",
+              "tools_triggered": "orla_list_budgets",
+              "expected_behavior": "Reports each budget against its limit."
+            },
+            {
+              "description": "Record a cash expense",
+              "prompt": "Record 12.50 EUR for coffee from my Cash account today.",
+              "tools_triggered": "orla_list_accounts, orla_book_transaction",
+              "expected_behavior": "Finds the Cash account, then books the expense; the entry lands in the books straight away."
+            },
+            {
+              "description": "Spending by category from Orla's reports",
+              "prompt": "Where did my money go last month, by category?",
+              "tools_triggered": "orla_list_reports, orla_read_report",
+              "expected_behavior": "Lists the available reports, reads the spending by category report and answers from it."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Paying a bill is not possible",
+              "prompt": "Pay this supplier bill."
+            },
+            {
+              "description": "Counterparty and fraud checks are not on this connection",
+              "prompt": "Check this counterparty for fraud."
+            },
+            {
+              "description": "Transfers and card details are not offered",
+              "prompt": "Send 100 USD from my card to a friend."
+            }
+          ]
+        }
       }
     }
   }
