@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "orla",
   "version": "0.5.3",
-  "description": "Your own Orla books in your assistant: read accounts, transactions and budgets, record transactions, sort categories and keep budgets. Five bookkeeping skills on the personal MCP connection. No tool here moves money.",
+  "description": "Personal finance and small-business bookkeeping from your own books: your assistant books a bank statement after you check the rows, sorts expenses, reads budgets and net worth. It cannot move money.",
   "author": {
     "name": "Digital Flow Pte. Ltd.",
     "url": "https://orla.finance"
