@@ -58,6 +58,24 @@
     },
     {
       "arguments": [
+        "document_id",
+        "idempotency_key",
+        "rationale",
+        "space_id",
+        "transaction_id"
+      ],
+      "destructive": false,
+      "name": "orla_attach_document",
+      "readOnly": false,
+      "required": [
+        "document_id",
+        "idempotency_key",
+        "space_id",
+        "transaction_id"
+      ]
+    },
+    {
+      "arguments": [
         "account_id",
         "amount",
         "category_id",
@@ -211,6 +229,22 @@
       "required": [
         "idempotency_key",
         "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "attachment_id",
+        "idempotency_key",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": true,
+      "name": "orla_detach_document",
+      "readOnly": false,
+      "required": [
+        "attachment_id",
+        "idempotency_key",
         "space_id"
       ]
     },
@@ -893,6 +927,19 @@
       "readOnly": true,
       "required": [
         "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id",
+        "transaction_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_attachments",
+      "readOnly": true,
+      "required": [
+        "space_id",
+        "transaction_id"
       ]
     },
     {
