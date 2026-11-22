@@ -101,6 +101,52 @@
     },
     {
       "arguments": [
+        "billing_email",
+        "cc_emails",
+        "city",
+        "contact_email",
+        "country",
+        "idempotency_key",
+        "kind",
+        "name",
+        "note",
+        "phone",
+        "postcode",
+        "rationale",
+        "reg_number",
+        "roles",
+        "space_id",
+        "state",
+        "street",
+        "tax_id"
+      ],
+      "destructive": false,
+      "name": "orla_create_contact",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "limit",
+        "offset",
+        "q",
+        "role",
+        "space_id",
+        "tax_id"
+      ],
+      "destructive": false,
+      "name": "orla_find_contacts",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "accept_balance_break",
         "accept_holder",
         "account_id",
@@ -280,6 +326,19 @@
     },
     {
       "arguments": [
+        "contact_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_read_contact",
+      "readOnly": true,
+      "required": [
+        "contact_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "arguments",
         "name",
         "space_id"
@@ -355,6 +414,37 @@
       "name": "orla_split_balances",
       "readOnly": true,
       "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "billing_email",
+        "cc_emails",
+        "city",
+        "contact_email",
+        "contact_id",
+        "country",
+        "idempotency_key",
+        "kind",
+        "name",
+        "note",
+        "phone",
+        "postcode",
+        "rationale",
+        "reg_number",
+        "roles",
+        "space_id",
+        "state",
+        "street",
+        "tax_id"
+      ],
+      "destructive": false,
+      "name": "orla_update_contact",
+      "readOnly": false,
+      "required": [
+        "contact_id",
+        "idempotency_key",
         "space_id"
       ]
     },
