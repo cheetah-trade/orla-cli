@@ -298,6 +298,18 @@
     },
     {
       "arguments": [
+        "list",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_views",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "account_id",
         "limit",
         "month",
