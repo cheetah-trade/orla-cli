@@ -22,7 +22,7 @@
     "com.openai": {
       "interface": {
         "displayName": "Orla",
-        "shortDescription": "Your own books, read and kept by your assistant",
+        "shortDescription": "Personal finance, bookkeeping",
         "longDescription": "Orla keeps the books of a person, a household or a small company across bank accounts, cards, exchanges and crypto wallets. This plugin connects your assistant to your own Orla spaces through the personal connection. It reads accounts, transactions, budgets and net worth, records and corrects transactions, sorts categories, sets budget limits and records shared expenses in a shared space. It acts as you, only in the spaces you tick on Orla's consent page, with your permissions. Nothing in it can pay, transfer money or reveal card details: those tools do not exist at this address. The owner of a shared space can leave every connected assistant reading only.",
         "developerName": "Digital Flow Pte. Ltd.",
         "category": "Finance",
@@ -31,6 +31,7 @@
           "Write"
         ],
         "websiteURL": "https://orla.finance",
+        "supportURL": "https://www.orla.finance/en/contact",
         "privacyPolicyURL": "https://orla.finance/en/privacy",
         "termsOfServiceURL": "https://orla.finance/en/terms",
         "defaultPrompt": [
