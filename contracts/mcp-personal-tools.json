@@ -7,7 +7,9 @@
     "orla_risk_case",
     "orla_risk_check",
     "orla_risk_counterparties",
-    "orla_risk_trace"
+    "orla_risk_trace",
+    "orla_list_reports",
+    "orla_read_report"
   ],
   "tools": [
     {
@@ -76,6 +78,39 @@
         "idempotency_key",
         "kind",
         "occurred_on",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "by_kind",
+        "chart",
+        "compare",
+        "currency",
+        "date_field",
+        "date_from",
+        "date_to",
+        "distinct_of",
+        "extras",
+        "filters",
+        "group_by",
+        "kind",
+        "limit",
+        "measure",
+        "month",
+        "months",
+        "period",
+        "query",
+        "sort",
+        "sort_dir",
+        "source",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_build_report",
+      "readOnly": true,
+      "required": [
+        "group_by",
         "space_id"
       ]
     },
@@ -197,6 +232,217 @@
     },
     {
       "arguments": [
+        "account_name",
+        "days",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_account_balance_history",
+      "readOnly": true,
+      "required": [
+        "account_name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "account_name",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_account_holdings",
+      "readOnly": true,
+      "required": [
+        "account_name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_accounts_summary",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id",
+        "supplier"
+      ],
+      "destructive": false,
+      "name": "orla_get_bills_due",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_bills_summary",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "as_of",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_book_balance",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "as_of",
+        "counterparty",
+        "side",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_book_open_documents",
+      "readOnly": true,
+      "required": [
+        "side",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "as_of",
+        "side",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_book_owed",
+      "readOnly": true,
+      "required": [
+        "side",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "from",
+        "space_id",
+        "to"
+      ],
+      "destructive": false,
+      "name": "orla_get_book_trial_balance",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_business_kpis",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_calendar_summary",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "account",
+        "days",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_cash_forecast",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "months",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_cashflow",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "months",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_client_concentration",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_client_payment_speed",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "from",
+        "space_id",
+        "to"
+      ],
+      "destructive": false,
+      "name": "orla_get_collected",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "days",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_collection_measure",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "contract_id",
         "space_id"
       ],
@@ -222,6 +468,391 @@
     },
     {
       "arguments": [
+        "include_settled",
+        "space_id",
+        "who"
+      ],
+      "destructive": false,
+      "name": "orla_get_debts",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "account_name",
+        "days",
+        "space_id",
+        "venue"
+      ],
+      "destructive": false,
+      "name": "orla_get_exchange_pnl",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_expected_inflows",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_investor_update",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_invoice_summary",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "days",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_liquidity",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "name",
+        "space_id",
+        "unpaid_only"
+      ],
+      "destructive": false,
+      "name": "orla_get_loan_schedule",
+      "readOnly": true,
+      "required": [
+        "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "include_closed",
+        "name",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_loans",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_loans_and_debts_summary",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_money_movement_cost",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "period",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_month_status",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_net_worth",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_paid_out_ahead",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id",
+        "who"
+      ],
+      "destructive": false,
+      "name": "orla_get_payment_brief",
+      "readOnly": true,
+      "required": [
+        "space_id",
+        "who"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id",
+        "waiting_for_me",
+        "who"
+      ],
+      "destructive": false,
+      "name": "orla_get_payment_queue",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "days",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_payment_week",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_payments_summary",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_period_diff",
+      "readOnly": true,
+      "required": [
+        "month",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "months",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_projects_pnl",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_receivables_and_payables",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "name",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_recurring_plans",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_spending_by_category",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id",
+        "year"
+      ],
+      "destructive": false,
+      "name": "orla_get_tax_readiness",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "limit",
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_top_payees",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "payer",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_unbilled_income",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "days",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_upcoming_obligations",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "days",
+        "direction",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_upcoming_payments",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_vat_ahead",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_vat_periods",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_vat_summary",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "limit",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_whats_burning",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_work_in_progress",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "accept_balance_break",
         "accept_holder",
         "account_id",
@@ -239,6 +870,17 @@
         "document_id",
         "idempotency_key",
         "preview_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_accountant_months",
+      "readOnly": true,
+      "required": [
         "space_id"
       ]
     },
