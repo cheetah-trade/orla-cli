@@ -81,6 +81,33 @@
     },
     {
       "arguments": [
+        "months",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_cash_flow",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "compare_to",
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_compare_months",
+      "readOnly": true,
+      "required": [
+        "compare_to",
+        "month",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "currency",
         "idempotency_key",
         "kind",
@@ -96,6 +123,52 @@
         "currency",
         "idempotency_key",
         "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "billing_email",
+        "cc_emails",
+        "city",
+        "contact_email",
+        "country",
+        "idempotency_key",
+        "kind",
+        "name",
+        "note",
+        "phone",
+        "postcode",
+        "rationale",
+        "reg_number",
+        "roles",
+        "space_id",
+        "state",
+        "street",
+        "tax_id"
+      ],
+      "destructive": false,
+      "name": "orla_create_contact",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "limit",
+        "offset",
+        "q",
+        "role",
+        "space_id",
+        "tax_id"
+      ],
+      "destructive": false,
+      "name": "orla_find_contacts",
+      "readOnly": true,
+      "required": [
         "space_id"
       ]
     },
@@ -225,10 +298,33 @@
     },
     {
       "arguments": [
+        "month",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_month_summary",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "space_id"
       ],
       "destructive": false,
       "name": "orla_net_worth",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_owed",
       "readOnly": true,
       "required": [
         "space_id"
@@ -280,6 +376,19 @@
     },
     {
       "arguments": [
+        "contact_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_read_contact",
+      "readOnly": true,
+      "required": [
+        "contact_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "arguments",
         "name",
         "space_id"
@@ -310,6 +419,18 @@
         "preview_id",
         "space_id",
         "transaction_ids"
+      ]
+    },
+    {
+      "arguments": [
+        "plan",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_recurring_spending",
+      "readOnly": true,
+      "required": [
+        "space_id"
       ]
     },
     {
@@ -355,6 +476,35 @@
       "name": "orla_split_balances",
       "readOnly": true,
       "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "city",
+        "contact_email",
+        "contact_id",
+        "country",
+        "idempotency_key",
+        "kind",
+        "name",
+        "note",
+        "phone",
+        "postcode",
+        "rationale",
+        "reg_number",
+        "roles",
+        "space_id",
+        "state",
+        "street",
+        "tax_id"
+      ],
+      "destructive": false,
+      "name": "orla_update_contact",
+      "readOnly": false,
+      "required": [
+        "contact_id",
+        "idempotency_key",
         "space_id"
       ]
     },
