@@ -298,6 +298,22 @@
     },
     {
       "arguments": [
+        "account_id",
+        "limit",
+        "month",
+        "months",
+        "offset",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_missing_receipts",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "month",
         "space_id"
       ],
