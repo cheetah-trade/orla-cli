@@ -10,7 +10,7 @@ End-to-end check: fault-inject transient and persistent open failures; assert se
 
 Existing evidence: main8c3ba987 still waits only for EEXIST in src/store.ts; historical run45074018813 failed on Windows open refresh.lock EPERM and then passed a retry. No overlapping open PR or active claim found. Windows access-denied errors map to EPERM in libuv; the precise cause of the historical transient is not proven. The fix addresses the observed transient error without treating every permission failure as recoverable indefinitely.
 
-Reference: https://github.com/libuv/libuv/blob/v1.x/src/win/error.c (ERROR_ACCESS_DENIED mapping). No production credentials are used by tests.
+References: https://github.com/libuv/libuv/blob/v1.x/src/win/error.c (ERROR_ACCESS_DENIED mapping); https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew (pending deletion can make CreateFile return access denied). No production credentials are used by tests.
 
 ## Deviations
 None.
