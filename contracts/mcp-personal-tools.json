@@ -3,13 +3,13 @@
   "door": "personal connection (mcp_personal.PRESET, money tools withheld)",
   "left": [
     "orla_find_service",
+    "orla_list_reports",
+    "orla_read_report",
     "orla_risk_alerts",
     "orla_risk_case",
     "orla_risk_check",
     "orla_risk_counterparties",
-    "orla_risk_trace",
-    "orla_list_reports",
-    "orla_read_report"
+    "orla_risk_trace"
   ],
   "tools": [
     {
@@ -272,6 +272,29 @@
       "required": [
         "attachment_id",
         "idempotency_key",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "account_id",
+        "contact_id",
+        "currency",
+        "due_on",
+        "idempotency_key",
+        "lines",
+        "notes",
+        "rationale",
+        "space_id",
+        "tax_rate"
+      ],
+      "destructive": false,
+      "name": "orla_draft_invoice",
+      "readOnly": false,
+      "required": [
+        "contact_id",
+        "idempotency_key",
+        "lines",
         "space_id"
       ]
     },
@@ -1034,6 +1057,22 @@
     },
     {
       "arguments": [
+        "contact_id",
+        "limit",
+        "offset",
+        "q",
+        "space_id",
+        "status"
+      ],
+      "destructive": false,
+      "name": "orla_list_invoices",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "space_id"
       ],
       "destructive": false,
@@ -1192,6 +1231,19 @@
     },
     {
       "arguments": [
+        "invoice_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_preview_invoice_send",
+      "readOnly": true,
+      "required": [
+        "invoice_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "category_id",
         "clear_category",
         "space_id",
@@ -1244,6 +1296,19 @@
       "readOnly": true,
       "required": [
         "contact_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "invoice_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_read_invoice",
+      "readOnly": true,
+      "required": [
+        "invoice_id",
         "space_id"
       ]
     },
@@ -1308,6 +1373,24 @@
       "required": [
         "kind",
         "text"
+      ]
+    },
+    {
+      "arguments": [
+        "idempotency_key",
+        "invoice_id",
+        "preview_id",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_send_invoice",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "invoice_id",
+        "preview_id",
+        "space_id"
       ]
     },
     {
@@ -1411,6 +1494,29 @@
       "required": [
         "contact_id",
         "idempotency_key",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "account_id",
+        "contact_id",
+        "currency",
+        "due_on",
+        "idempotency_key",
+        "invoice_id",
+        "lines",
+        "notes",
+        "rationale",
+        "space_id",
+        "tax_rate"
+      ],
+      "destructive": false,
+      "name": "orla_update_invoice_draft",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "invoice_id",
         "space_id"
       ]
     },
