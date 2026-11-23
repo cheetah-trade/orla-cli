@@ -1376,6 +1376,7 @@
     },
     {
       "arguments": [
+        "detail",
         "plan",
         "space_id"
       ],
