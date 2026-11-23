@@ -1291,6 +1291,22 @@
     },
     {
       "arguments": [
+        "confirmed",
+        "idempotency_key",
+        "kind",
+        "name",
+        "rationale"
+      ],
+      "destructive": false,
+      "name": "orla_set_up_books",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "kind"
+      ]
+    },
+    {
+      "arguments": [
         "space_id"
       ],
       "destructive": false,
