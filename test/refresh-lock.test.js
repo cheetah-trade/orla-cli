@@ -100,13 +100,17 @@ try {
   if (-not [PendingLock]::DeleteFileW($env:ORLA_TEST_LOCK)) { throw 'DeleteFileW failed' }
   [Console]::Out.WriteLine('pending')
   [Console]::Out.Flush()
-  [Console]::ReadLine() | Out-Null
+  $deadline = [DateTime]::UtcNow.AddSeconds(10)
+  while (-not [System.IO.File]::Exists($env:ORLA_TEST_RELEASE)) {
+    if ([DateTime]::UtcNow -gt $deadline) { throw 'Release barrier timed out' }
+    [System.Threading.Thread]::Sleep(10)
+  }
 } finally {
   [PendingLock]::CloseHandle($handle) | Out-Null
 }
 `;
   const child = spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", script], {
-    env: { ...process.env, ORLA_TEST_LOCK: lock.path },
+    env: { ...process.env, ORLA_TEST_LOCK: lock.path, ORLA_TEST_RELEASE: lock.path + ".release" },
     stdio: ["pipe", "pipe", "pipe"],
   });
   t.after(() => child.kill());
@@ -121,9 +125,9 @@ try {
       if (output.includes("pending")) resolve();
     });
   });
-  throws(() => fs.openSync(lock.path, "wx", 0o600), (err) => err.code === "EPERM" && err.syscall === "open");
+  throws(() => fs.closeSync(fs.openSync(lock.path, "wx", 0o600)), (err) => err.code === "EPERM" && err.syscall === "open");
   const acquired = withRefreshLock(async () => "acquired");
-  const release = setTimeout(() => child.stdin.end("release\n"), 150);
+  const release = setTimeout(() => fs.writeFileSync(lock.path + ".release", ""), 150);
   t.after(() => clearTimeout(release));
   strictEqual(await acquired, "acquired");
   strictEqual(fs.existsSync(lock.path), false);
