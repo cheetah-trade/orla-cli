@@ -45,6 +45,7 @@
         "payee",
         "rationale",
         "space_id",
+        "tags",
         "transaction_id"
       ],
       "destructive": true,
@@ -857,6 +858,19 @@
     },
     {
       "arguments": [
+        "space_id",
+        "transaction_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_transaction_split",
+      "readOnly": true,
+      "required": [
+        "space_id",
+        "transaction_id"
+      ]
+    },
+    {
+      "arguments": [
         "payer",
         "space_id"
       ],
@@ -1473,6 +1487,24 @@
     },
     {
       "arguments": [
+        "idempotency_key",
+        "parts",
+        "rationale",
+        "space_id",
+        "transaction_id"
+      ],
+      "destructive": true,
+      "name": "orla_split_transaction",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "parts",
+        "space_id",
+        "transaction_id"
+      ]
+    },
+    {
+      "arguments": [
         "detail",
         "space_id",
         "year"
@@ -1500,6 +1532,23 @@
         "import_mark",
         "preview_id",
         "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "category_id",
+        "idempotency_key",
+        "rationale",
+        "space_id",
+        "transaction_id"
+      ],
+      "destructive": true,
+      "name": "orla_unsplit_transaction",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "space_id",
+        "transaction_id"
       ]
     },
     {
