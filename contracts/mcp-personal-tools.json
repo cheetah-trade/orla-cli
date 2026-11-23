@@ -146,6 +146,33 @@
     },
     {
       "arguments": [
+        "account",
+        "days",
+        "detail",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_cash_forecast",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "detail",
+        "months",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_client_revenue",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "compare_to",
         "month",
         "space_id"
@@ -1148,6 +1175,18 @@
     },
     {
       "arguments": [
+        "detail",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_owed_by_age",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "account_id",
         "amount_max",
         "amount_min",
@@ -1369,6 +1408,19 @@
       ],
       "destructive": false,
       "name": "orla_split_balances",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "detail",
+        "space_id",
+        "year"
+      ],
+      "destructive": false,
+      "name": "orla_tax_readiness",
       "readOnly": true,
       "required": [
         "space_id"
