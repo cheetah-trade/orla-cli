@@ -20,18 +20,18 @@ there, not with pages of rows you add up yourself.
 
 ```
 orla_whoami                                   -> space id, masked, accounts_restricted
-orla_list_reports(space_id)                   -> name, what it answers, its arguments
-orla_read_report(space_id, name, arguments)   -> the figures
+orla_get_spending_by_category(space_id, month) -> where the month's money went
+orla_get_cashflow(space_id, months)           -> money in and out, month by month
+orla_get_top_payees(space_id, month, limit)   -> who got the most
+orla_get_bills_due(space_id)                  -> supplier bills still to pay
+orla_get_receivables_and_payables(space_id)   -> what is owed to and by the space
 ```
 
-`orla_list_reports` says which reports this space and this connection may run,
-each with the arguments it takes. For a month the useful ones are usually
-spending by category, cash flow and top payees, plus bills due and what is owed
-to and by the space when the space keeps them. Pass only the arguments a report
-lists. A report that is only true over the whole space is left out when the
-connection reaches only some accounts (counted under `need_whole_space`), and a
-report the space's plan does not include is refused with that fact: say it and
-move on.
+Each report is its own tool and takes only the arguments listed above. Bills due
+and what is owed to and by the space matter when the space keeps them. A report
+that is only true over the whole space is refused when the connection reaches
+only some accounts, and a report the space's plan does not include is refused
+with that fact: say it and move on.
 
 Then the reads the reports do not cover:
 

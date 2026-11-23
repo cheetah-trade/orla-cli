@@ -1100,17 +1100,6 @@
         "space_id"
       ],
       "destructive": false,
-      "name": "orla_list_reports",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "space_id"
-      ],
-      "destructive": false,
       "name": "orla_list_shared_expenses",
       "readOnly": true,
       "required": [
@@ -1335,20 +1324,6 @@
       "readOnly": true,
       "required": [
         "invoice_id",
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "arguments",
-        "name",
-        "space_id"
-      ],
-      "destructive": false,
-      "name": "orla_read_report",
-      "readOnly": true,
-      "required": [
-        "name",
         "space_id"
       ]
     },
