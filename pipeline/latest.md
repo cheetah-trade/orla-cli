@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-23 07:13)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-23 13:35)
 
-Window (UTC): 2026-11-16 06:13:59 – 2026-11-23 06:13:59, every run listed.
+Window (UTC): 2026-11-16 12:35:09 – 2026-11-23 12:35:09, every run listed.
 
 ## CI by workflow
 
@@ -8,19 +8,20 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 
 | Workflow | Runs | Failed | Not run yet | Failure rate | Reruns | Median min | p90 min |
 |---|---|---|---|---|---|---|---|
-| ci | 90 | 3 | 0 | 3% | 1 | 0.7 | 0.8 |
-| dco | 60 | 7 | 0 | 12% | 0 | 0.1 | 0.2 |
+| ci | 106 | 8 | 0 | 8% | 1 | 0.7 | 0.8 |
+| dco | 72 | 8 | 0 | 11% | 0 | 0.1 | 0.2 |
 | Dependabot Updates | 12 | 0 | 0 | 0% | 0 | 0.7 | 0.8 |
 | release | 4 | 0 | 0 | 0% | 0 | 0.6 | 0.8 |
 
 ## Where it fails (jobs of recent failed runs)
 
-- dco / signed-off: 7
-- ci / windows: 3
-- ci / check: 1
+- ci / windows: 8
+- dco / signed-off: 8
+- ci / check: 3
 
 ## Why runs fail (error lines of recent failed runs)
 
+- 1× # (Контракт: напоминание по счёту клиенту и ссылка на оплату (180e)) has no Signed-off-by line
 - 1× # (Контракт: orla_set_up_books, настройка книг из чата (37ce)) has no Signed-off-by line
 - 1× # (contract: копия контракта личной двери на девять новых инструментов) has no Signed-off-by line
 - 1× # (contracts: the address book on the personal door (find, read, add, correct a contact)) has no Signed-off-by line
@@ -42,4 +43,4 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 ## Pull requests
 
 - Merged, complete UTC days: 29 without bots (0 by bots left out); to merge, bots excluded: median 0.0 h, p90 1.3 h.
-- Open (not drafts): 4; oldest: #28 build(deps): Bump actions/checkout from 4 to 7 (2.4 d); #29 build(deps): Bump actions/setup-node from 4 to 7 (2.4 d); #30 build(deps-dev): Bump @types/node from 22.20.1 to 26.6.6 (2.4 d); #31 build(deps-dev): Bump typescript from 5.9.3 to 7.0.2 (2.4 d).
+- Open (not drafts): 4; oldest: #28 build(deps): Bump actions/checkout from 4 to 7 (2.7 d); #29 build(deps): Bump actions/setup-node from 4 to 7 (2.7 d); #30 build(deps-dev): Bump @types/node from 22.20.1 to 26.6.6 (2.7 d); #31 build(deps-dev): Bump typescript from 5.9.3 to 7.0.2 (2.7 d).
