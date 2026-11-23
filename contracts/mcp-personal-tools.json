@@ -45,7 +45,6 @@
         "payee",
         "rationale",
         "space_id",
-        "tags",
         "transaction_id"
       ],
       "destructive": true,
