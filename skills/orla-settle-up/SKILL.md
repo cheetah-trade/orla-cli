@@ -24,8 +24,9 @@ Report them, never act on them.
   suppliers it owes): a summary question, so start with the reports, not rows.
 
 ```
-orla_list_reports(space_id)                   -> look for what is owed to and by the space, bills due, debts
-orla_read_report(space_id, name, arguments)
+orla_get_receivables_and_payables(space_id)   -> what is owed to and by the space
+orla_get_bills_due(space_id)                  -> bills due
+orla_get_debts(space_id)                      -> debts between the people of the space
 orla_list_bills(space_id)                     -> each supplier bill, what is paid and what remains
 ```
 

@@ -73,8 +73,8 @@
             {
               "description": "Spending by category from Orla's reports",
               "prompt": "Where did my money go last month, by category?",
-              "tools_triggered": "orla_list_reports, orla_read_report",
-              "expected_behavior": "Lists the available reports, reads the spending by category report and answers from it."
+              "tools_triggered": "orla_get_spending_by_category",
+              "expected_behavior": "Reads the spending by category report and answers from it."
             }
           ],
           "negative": [

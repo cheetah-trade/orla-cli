@@ -3,9 +3,9 @@ type: llm
 weight: 1
 ---
 
-The plan starts from `orla_whoami`, then `orla_list_reports` and
-`orla_read_report` for the month's summaries (spending by category, cash flow,
-what is owed or due), before any page of transactions. Supplier bills due come
+The plan starts from `orla_whoami`, then the report tools
+(`orla_get_spending_by_category`, `orla_get_cashflow`,
+`orla_get_receivables_and_payables`) for the month's summaries, before any page of transactions. Supplier bills due come
 from `orla_list_bills`, and payments waiting for a signature from
 `orla_list_payments`.
 
