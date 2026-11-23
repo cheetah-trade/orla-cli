@@ -194,8 +194,8 @@ test("a call Orla never answers times out as cli.timeout, not forever", async ()
 });
 
 /** The bridge as a client sees it. */
-function bridge(apiBase, env) {
-  const child = spawn(process.execPath, [CLI, "mcp", "--api", apiBase], { env, stdio: ["pipe", "pipe", "pipe"] });
+function bridge(apiBase, env, nodeArgs = []) {
+  const child = spawn(process.execPath, [...nodeArgs, CLI, "mcp", "--api", apiBase], { env, stdio: ["pipe", "pipe", "pipe"] });
   const lines = [];
   let err = "";
   let buffered = "";
@@ -290,7 +290,9 @@ test("a protocol error Orla sends with id null reaches the client under the requ
 test("a sign-in whose browser never comes back gives up and frees its port", async () => {
   const stub = await stubOrla(whoami);
   const { env } = isolated({ ORLA_SIGN_IN_WAIT_MS: "400" });
-  const b = bridge(stub.apiBase, env);
+  // A parallel sign-in can reclaim a released published port before fetch probes
+  // it. Give this child an ephemeral port; the real timeout still has to close it.
+  const b = bridge(stub.apiBase, env, ["--import", new URL("./helpers/ephemeral-callback.mjs", import.meta.url).href]);
   try {
     b.send({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {} } });
     const [, opened] = await b.stderrUntil(/Opening (\S+)/);
