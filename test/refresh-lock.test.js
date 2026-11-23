@@ -1,9 +1,10 @@
-import { strictEqual, rejects } from "node:assert/strict";
+import { strictEqual, rejects, throws } from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import { join } from "node:path";
 import { syncBuiltinESMExports } from "node:module";
 import { test } from "node:test";
+import { spawn } from "node:child_process";
 import { withRefreshLock } from "../dist/store.js";
 
 function isolatedLock(t, platform = "win32") {
@@ -75,3 +76,55 @@ for (const [platform, code, syscall] of [["linux", "EPERM", "open"], ["win32", "
     strictEqual(attempts, 1);
   });
 }
+
+// Exercise the actual Windows delete-pending error, not just a mocked errno.
+test("Windows delete-pending lock retries until the final handle closes", { skip: process.platform !== "win32", timeout: 30000 }, async (t) => {
+  const lock = isolatedLock(t);
+  fs.mkdirSync(join(process.env.XDG_CONFIG_HOME, "orla"), { recursive: true });
+  const script = `
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public class PendingLock {
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+  public static extern IntPtr CreateFileW(string path, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+  public static extern bool DeleteFileW(string path);
+  [DllImport("kernel32.dll", SetLastError = true)]
+  public static extern bool CloseHandle(IntPtr handle);
+}
+'@
+$handle = [PendingLock]::CreateFileW($env:ORLA_TEST_LOCK, 0x80000000, 7, [IntPtr]::Zero, 2, 0x80, [IntPtr]::Zero)
+if ($handle -eq [IntPtr](-1)) { throw 'CreateFileW failed' }
+try {
+  if (-not [PendingLock]::DeleteFileW($env:ORLA_TEST_LOCK)) { throw 'DeleteFileW failed' }
+  [Console]::Out.WriteLine('pending')
+  [Console]::Out.Flush()
+  [Console]::ReadLine() | Out-Null
+} finally {
+  [PendingLock]::CloseHandle($handle) | Out-Null
+}
+`;
+  const child = spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", script], {
+    env: { ...process.env, ORLA_TEST_LOCK: lock.path },
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  t.after(() => child.kill());
+  let output = "";
+  let errors = "";
+  child.stderr.on("data", (chunk) => { errors += chunk; });
+  await new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("exit", (code) => reject(new Error(`delete-pending fixture exited ${code}: ${errors}`)));
+    child.stdout.on("data", (chunk) => {
+      output += chunk;
+      if (output.includes("pending")) resolve();
+    });
+  });
+  throws(() => fs.openSync(lock.path, "wx", 0o600), (err) => err.code === "EPERM" && err.syscall === "open");
+  const acquired = withRefreshLock(async () => "acquired");
+  const release = setTimeout(() => child.stdin.end("release\n"), 150);
+  t.after(() => clearTimeout(release));
+  strictEqual(await acquired, "acquired");
+  strictEqual(fs.existsSync(lock.path), false);
+});
