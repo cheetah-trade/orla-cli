@@ -89,16 +89,17 @@ public class PendingLock {
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
   public static extern IntPtr CreateFileW(string path, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
   [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-  public static extern bool DeleteFileW(string path);
+  public static extern bool SetFileInformationByHandle(IntPtr handle, int infoClass, ref int deleteFile, uint size);
   [DllImport("kernel32.dll", SetLastError = true)]
   public static extern bool CloseHandle(IntPtr handle);
 }
 '@
-$handle = [PendingLock]::CreateFileW($env:ORLA_TEST_LOCK, [uint32]2147483648, 7, [IntPtr]::Zero, 2, 0x80, [IntPtr]::Zero)
+$handle = [PendingLock]::CreateFileW($env:ORLA_TEST_LOCK, [uint32]2147549184, 7, [IntPtr]::Zero, 2, 0x80, [IntPtr]::Zero)
 if ($handle -eq [IntPtr](-1)) { throw 'CreateFileW failed' }
 try {
-  if (-not [PendingLock]::DeleteFileW($env:ORLA_TEST_LOCK)) { throw 'DeleteFileW failed' }
-  [Console]::Out.WriteLine('pending')
+  $deleteFile = 1
+  if (-not [PendingLock]::SetFileInformationByHandle($handle, 4, [ref]$deleteFile, 4)) { throw 'FileDispositionInfo failed' }
+  [Console]::Out.WriteLine('LOCK_HELD')
   [Console]::Out.Flush()
   $deadline = [DateTime]::UtcNow.AddSeconds(10)
   while (-not [System.IO.File]::Exists($env:ORLA_TEST_RELEASE)) {
@@ -122,10 +123,11 @@ try {
     child.once("exit", (code) => reject(new Error(`delete-pending fixture exited ${code}: ${errors}`)));
     child.stdout.on("data", (chunk) => {
       output += chunk;
-      if (output.includes("pending")) resolve();
+      if (output.split(/\r?\n/).includes("LOCK_HELD")) resolve();
     });
   });
-  throws(() => fs.closeSync(fs.openSync(lock.path, "wx", 0o600)), (err) => err.code === "EPERM" && err.syscall === "open");
+  strictEqual(child.exitCode, null, "native holder remains alive");
+  throws(() => fs.closeSync(fs.openSync(lock.path, "wx", 0o600)), (err) => err.code === "EPERM" && err.syscall === "open", `fixture output: ${output}; stderr: ${errors}`);
   const acquired = withRefreshLock(async () => "acquired");
   const release = setTimeout(() => fs.writeFileSync(lock.path + ".release", ""), 150);
   t.after(() => clearTimeout(release));
