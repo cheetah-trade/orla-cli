@@ -94,7 +94,7 @@ public class PendingLock {
   public static extern bool CloseHandle(IntPtr handle);
 }
 '@
-$handle = [PendingLock]::CreateFileW($env:ORLA_TEST_LOCK, 0x80000000, 7, [IntPtr]::Zero, 2, 0x80, [IntPtr]::Zero)
+$handle = [PendingLock]::CreateFileW($env:ORLA_TEST_LOCK, [uint32]2147483648, 7, [IntPtr]::Zero, 2, 0x80, [IntPtr]::Zero)
 if ($handle -eq [IntPtr](-1)) { throw 'CreateFileW failed' }
 try {
   if (-not [PendingLock]::DeleteFileW($env:ORLA_TEST_LOCK)) { throw 'DeleteFileW failed' }
