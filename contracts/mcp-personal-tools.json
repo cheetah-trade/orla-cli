@@ -602,6 +602,19 @@
     },
     {
       "arguments": [
+        "invoice",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_invoice_pay_link",
+      "readOnly": true,
+      "required": [
+        "invoice",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "space_id"
       ],
       "destructive": false,
@@ -1231,6 +1244,19 @@
     },
     {
       "arguments": [
+        "invoice",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_preview_invoice_reminder",
+      "readOnly": true,
+      "required": [
+        "invoice",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "invoice_id",
         "space_id"
       ],
@@ -1389,6 +1415,24 @@
       "required": [
         "idempotency_key",
         "invoice_id",
+        "preview_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "idempotency_key",
+        "invoice",
+        "preview_id",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_send_invoice_reminder",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "invoice",
         "preview_id",
         "space_id"
       ]
