@@ -174,6 +174,7 @@ function readFileOrNull(path: string): string | null {
  */
 const STALE_LOCK_MS = 30_000;
 const LOCK_POLL_MS = 50;
+const WINDOWS_OPEN_RETRIES = 20;
 
 function lockPath(): string {
   return join(dirname(filePath()), "refresh.lock");
@@ -182,12 +183,22 @@ function lockPath(): string {
 export async function withRefreshLock<T>(work: () => Promise<T>): Promise<T> {
   const path = lockPath();
   mkdirSync(dirname(path), { recursive: true });
+  let windowsOpenRetries = 0;
   for (;;) {
     try {
       closeSync(openSync(path, "wx", 0o600));
       break;
     } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
+      const error = err as NodeJS.ErrnoException;
+      // Windows can briefly refuse an exclusive open while another process
+      // releases the file. Keep the exclusive create and surface a persistent
+      // denial after a bounded wait; never chmod or remove someone else's lock.
+      if (platform() === "win32" && error.code === "EPERM" && error.syscall === "open") {
+        if (windowsOpenRetries++ >= WINDOWS_OPEN_RETRIES) throw err;
+        await new Promise((r) => setTimeout(r, LOCK_POLL_MS));
+        continue;
+      }
+      if (error.code !== "EEXIST") throw err;
       try {
         if (Date.now() - statSync(path).mtimeMs > STALE_LOCK_MS) rmSync(path, { force: true });
       } catch {
