@@ -1164,6 +1164,17 @@
     },
     {
       "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_connections",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "q",
         "space_id"
       ],
