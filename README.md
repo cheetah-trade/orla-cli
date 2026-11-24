@@ -239,8 +239,10 @@ command. To install it:
 gemini extensions install https://github.com/cheetah-trade/orla-cli
 ```
 
-The first tool call opens Orla's consent page in your browser, so it needs a
-machine with one. Gemini CLI is a client Orla has not met on a live connection
+The extension signs in as `https://orla.finance/mcp-gemini-cli.json`, a client
+document Orla publishes for it, because the door registers no clients on the
+fly. The first tool call opens Orla's consent page in your browser, so it needs
+a machine with one. Gemini CLI is a client Orla has not met on a live connection
 yet, so the page names it as an unfamiliar client and shows where the code goes.
 The extension gallery finds the repository by this file and the
 `gemini-cli-extension` topic.
