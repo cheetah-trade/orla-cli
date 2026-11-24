@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-24 08:48)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-24 15:10)
 
-Window (UTC): 2026-11-17 07:48:47 – 2026-11-24 07:48:47, every run listed.
+Window (UTC): 2026-11-17 14:10:47 – 2026-11-24 14:10:47, every run listed.
 
 ## CI by workflow
 
@@ -8,16 +8,17 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 
 | Workflow | Runs | Failed | Not run yet | Failure rate | Reruns | Median min | p90 min |
 |---|---|---|---|---|---|---|---|
-| ci | 134 | 9 | 0 | 7% | 1 | 0.7 | 0.8 |
-| dco | 90 | 11 | 0 | 12% | 0 | 0.1 | 0.2 |
-| Dependabot Updates | 14 | 0 | 0 | 0% | 0 | 0.8 | 0.8 |
+| ci | 150 | 11 | 0 | 7% | 1 | 0.7 | 0.8 |
+| dco | 101 | 11 | 0 | 11% | 0 | 0.1 | 0.2 |
+| Dependabot Updates | 18 | 0 | 0 | 0% | 0 | 0.8 | 0.8 |
 | release | 4 | 0 | 0 | 0% | 0 | 0.6 | 0.8 |
 
 ## Where it fails (jobs of recent failed runs)
 
 - dco / signed-off: 11
-- ci / windows: 9
+- ci / windows: 10
 - ci / check: 3
+- ci / contract-ahead: 1
 
 ## Why runs fail (error lines of recent failed runs)
 
@@ -46,4 +47,4 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 ## Pull requests
 
 - Merged, complete UTC days: 41 without bots (0 by bots left out); to merge, bots excluded: median 0.0 h, p90 1.3 h.
-- Open (not drafts): 6; oldest: #28 build(deps): Bump actions/checkout from 4 to 7 (3.5 d); #29 build(deps): Bump actions/setup-node from 4 to 7 (3.5 d); #30 build(deps-dev): bump @types/node from 22.20.1 to 26.6.6 (3.5 d); #31 build(deps-dev): bump typescript from 5.9.3 to 7.0.2 (3.5 d); #66 Контракт: что требует внимания на личной двери (7263) (0.3 d).
+- Open (not drafts): 4; oldest: #28 build(deps): bump actions/checkout from 4 to 7 (3.8 d); #29 build(deps): bump actions/setup-node from 4 to 7 (3.8 d); #30 build(deps-dev): bump @types/node from 22.20.1 to 26.6.6 (3.8 d); #31 build(deps-dev): bump typescript from 5.9.3 to 7.0.2 (3.8 d).
