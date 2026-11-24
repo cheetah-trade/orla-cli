@@ -310,6 +310,27 @@
     },
     {
       "arguments": [
+        "frequency",
+        "idempotency_key",
+        "invoice_id",
+        "preview_id",
+        "rationale",
+        "send_automatically",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_create_invoice_schedule",
+      "readOnly": false,
+      "required": [
+        "frequency",
+        "idempotency_key",
+        "invoice_id",
+        "preview_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "amount",
         "category",
         "currency",
@@ -1200,6 +1221,17 @@
     },
     {
       "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_invoice_schedules",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "contact_id",
         "limit",
         "offset",
@@ -1420,6 +1452,22 @@
       "readOnly": true,
       "required": [
         "invoice",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "frequency",
+        "invoice_id",
+        "send_automatically",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_preview_invoice_schedule",
+      "readOnly": true,
+      "required": [
+        "frequency",
+        "invoice_id",
         "space_id"
       ]
     },
