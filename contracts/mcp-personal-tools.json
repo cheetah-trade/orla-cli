@@ -1185,6 +1185,9 @@
     },
     {
       "arguments": [
+        "kind",
+        "page",
+        "query",
         "space_id"
       ],
       "destructive": false,
