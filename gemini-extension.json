@@ -1,0 +1,10 @@
+{
+  "name": "orla",
+  "version": "0.5.3",
+  "description": "Personal finance and small-business bookkeeping from your own books: read accounts, budgets and net worth, sort expenses, book a bank statement after you check the rows. It cannot move money.",
+  "mcpServers": {
+    "orla": {
+      "httpUrl": "https://app.orla.finance/api/mcp/personal"
+    }
+  }
+}

@@ -104,3 +104,16 @@ test("the repo marketplace points at the plugin that is here", () => {
   }
   if (!entry.category) throw new Error("the marketplace entry has no category");
 });
+
+test("the Gemini CLI extension is the same plugin at the same version and the same door", () => {
+  const pkg = read("package.json");
+  const gemini = read("gemini-extension.json");
+  if (gemini.name !== "orla") throw new Error(`gemini-extension.json is named ${gemini.name}`);
+  if (gemini.version !== pkg.version) {
+    throw new Error(`gemini-extension.json is ${gemini.version} and package.json is ${pkg.version}; they release together`);
+  }
+  const servers = Object.values(gemini.mcpServers ?? {});
+  if (servers.length !== 1) throw new Error(`gemini-extension.json declares ${servers.length} servers, expected one`);
+  if (servers[0].httpUrl !== PERSONAL_DOOR) throw new Error(`gemini-extension.json points at ${servers[0].httpUrl}`);
+  if (servers[0].command || servers[0].url) throw new Error("the extension uses streamable HTTP only, no local command");
+});
