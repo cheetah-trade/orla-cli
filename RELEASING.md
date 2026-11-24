@@ -115,6 +115,8 @@ failed publish rather than as a stale file.
 `contracts/mcp-personal-tools.json` is a copy of the door's committed shape from
 the backend repository. It is updated by copying that file, and the backend's own
 gate is what says the copy is due.
+A new tool may reach the copy before it is live; a change to a tool that already
+exists only after it is live on production (`scripts/check-contract-ahead.mjs` in CI).
 
 ## What is not released from here
 
