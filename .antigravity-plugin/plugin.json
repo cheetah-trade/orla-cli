@@ -1,0 +1,27 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "orla",
+  "displayName": "Orla",
+  "version": "0.5.3",
+  "description": "Your own Orla books in Antigravity: read and record transactions, categories, budgets and reports over the personal connection. It cannot move money.",
+  "logo": "assets/logo.png",
+  "suggestedPrompts": [
+    "What did I spend on software last month in Orla?",
+    "Sort my uncategorized Orla transactions from this month.",
+    "Which of my Orla budgets went over this month?"
+  ],
+  "author": {
+    "name": "Digital Flow Pte. Ltd.",
+    "url": "https://orla.finance"
+  },
+  "homepage": "https://orla.finance/en/mcp",
+  "repository": "https://github.com/cheetah-trade/orla-cli",
+  "license": "MIT",
+  "keywords": [
+    "bookkeeping",
+    "budgets",
+    "personal-finance",
+    "small-business",
+    "mcp"
+  ]
+}

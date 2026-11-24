@@ -267,6 +267,32 @@ yet, so the page names it as an unfamiliar client and shows where the code goes.
 The extension gallery finds the repository by this file and the
 `gemini-cli-extension` topic.
 
+## As an Antigravity plugin
+
+`.antigravity-plugin/plugin.json` and `mcp_config.json` make this repository a
+Google Antigravity plugin: the personal door over HTTP and the skills in
+`skills/`, with no local command. To install it:
+
+```
+agy plugin install https://github.com/cheetah-trade/orla-cli
+```
+
+Or add the door by hand: in Antigravity open Customizations, then Installed,
+then MCP Servers, press +, and paste the address. The same in
+`~/.gemini/config/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "orla": { "serverUrl": "https://app.orla.finance/api/mcp/personal" }
+  }
+}
+```
+
+Press Authenticate next to Orla: Orla's consent page opens in your browser,
+you pick the spaces Antigravity may see, and Allow. Antigravity signs in with
+its own client document, `https://antigravity.google/oauth/client-metadata.json`.
+
 ## Where the token lives
 
 The OS keychain: `security` on macOS, `secret-tool` on Linux. Where neither
