@@ -32,6 +32,19 @@ jobs:
       # not be the first place `zip` meets the manifest.
       - run: node scripts/build-mcpb.mjs
 
+  # The contract copy may run ahead of production with new tools, never with a
+  # changed existing one (#60, #70): Orla's own gate on the other side goes red
+  # for every change there until the change lands. Production says what exists.
+  contract-ahead:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/check-contract-ahead.mjs
+
   # The Claude Desktop bundle declares win32, so the suite runs there too: the
   # sign-in opened a cut-off authorize URL on Windows and no job
   # here could have seen it (review 20.11.2026, P2-4).
