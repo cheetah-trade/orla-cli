@@ -132,3 +132,41 @@ test("the Gemini CLI extension is the same door at the same version", () => {
   if (server.oauth.clientSecret) throw new Error("a public client carries no secret");
   if (ext.description.includes("—")) throw new Error(`em dash in the extension text: ${ext.description}`);
 });
+
+test("the Antigravity plugin is the same door at the same version", () => {
+  // Antigravity reads `.antigravity-plugin/plugin.json` before a root
+  // `plugin.json` (taken here by the ChatGPT and Codex one), and its MCP servers
+  // only from `mcp_config.json` at the plugin root, with the endpoint in
+  // `serverUrl` (antigravity.google/docs/build-plugins, read 2026-11-24).
+  const plugin = read(".antigravity-plugin/plugin.json");
+  if (plugin.$schema !== "https://antigravity.google/schemas/v1/plugin.json") {
+    throw new Error(`.antigravity-plugin/plugin.json declares schema ${plugin.$schema}`);
+  }
+  if (plugin.name !== read(".claude-plugin/plugin.json").name) throw new Error(`the plugin is named ${plugin.name}`);
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(plugin.name)) throw new Error(`${plugin.name} is not kebab-case`);
+  if (plugin.version !== read("package.json").version) {
+    throw new Error(`.antigravity-plugin/plugin.json is ${plugin.version}; it releases with the package`);
+  }
+  for (const key of ["displayName", "description", "logo", "author"]) {
+    if (!plugin[key]) throw new Error(`the Antigravity manifest lacks ${key}`);
+  }
+  if (!existsSync(join(ROOT, plugin.logo))) throw new Error(`logo names ${plugin.logo}, which is not here`);
+  const prompts = plugin.suggestedPrompts ?? [];
+  if (prompts.length < 1 || prompts.length > 3) throw new Error(`${prompts.length} suggested prompts, Antigravity takes 1 to 3`);
+  const pitch = /\b(upgrade|pricing|subscribe|subscription|pro plan|free trial|billing)\b/i;
+  for (const text of [plugin.displayName, plugin.description, ...prompts]) {
+    if (pitch.test(text)) throw new Error(`the marketplace would show a sales pitch: ${text}`);
+    if (text.includes("—")) throw new Error(`em dash in the Antigravity text: ${text}`);
+  }
+
+  const config = read("mcp_config.json");
+  const servers = Object.entries(config.mcpServers ?? {});
+  if (servers.length !== 1) throw new Error(`mcp_config.json declares ${servers.length} servers, expected one`);
+  const [name, server] = servers[0];
+  if (name !== "orla") throw new Error(`the server is named ${name}`);
+  if (server.serverUrl !== PERSONAL_DOOR) throw new Error(`mcp_config.json points at ${server.serverUrl}`);
+  // Antigravity signs in with its own client document; anything else here
+  // (a local command, headers, a client id or secret) would be a second way in.
+  const extra = Object.keys(server).filter((k) => k !== "serverUrl");
+  if (extra.length) throw new Error(`mcp_config.json also sets ${extra.join(", ")}`);
+});
