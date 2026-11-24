@@ -1183,6 +1183,17 @@
         "space_id"
       ],
       "destructive": false,
+      "name": "orla_needs_attention",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
       "name": "orla_net_worth",
       "readOnly": true,
       "required": [
