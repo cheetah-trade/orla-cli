@@ -77,6 +77,17 @@
     },
     {
       "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_bank_account_status",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "account_id",
         "amount",
         "category_id",
@@ -184,6 +195,19 @@
       "required": [
         "compare_to",
         "month",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "contact_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_counterparty_check",
+      "readOnly": true,
+      "required": [
+        "contact_id",
         "space_id"
       ]
     },
