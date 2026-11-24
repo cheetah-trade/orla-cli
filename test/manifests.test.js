@@ -104,3 +104,23 @@ test("the repo marketplace points at the plugin that is here", () => {
   }
   if (!entry.category) throw new Error("the marketplace entry has no category");
 });
+
+test("the Gemini CLI extension is the same door at the same version", () => {
+  // The Gemini CLI gallery indexes a public repository by this file at its root
+  // (geminicli.com/docs/extensions/releasing, read 2026-11-24). `httpUrl` is
+  // streamable HTTP there; `url` would mean SSE and `command` a local process.
+  const ext = read("gemini-extension.json");
+  if (ext.name !== "orla") throw new Error(`the extension is named ${ext.name}`);
+  if (ext.version !== read("package.json").version) {
+    throw new Error(`gemini-extension.json is ${ext.version}; it releases with the package`);
+  }
+  const servers = Object.entries(ext.mcpServers ?? {});
+  if (servers.length !== 1) throw new Error(`gemini-extension.json declares ${servers.length} servers, expected one`);
+  const [name, server] = servers[0];
+  if (name !== "orla") throw new Error(`the server is named ${name}`);
+  if (server.httpUrl !== PERSONAL_DOOR) throw new Error(`gemini-extension.json points at ${server.httpUrl}`);
+  if (server.url || server.command || server.args || server.headers) {
+    throw new Error("the extension reaches the door over streamable HTTP only, with no local command and no headers");
+  }
+  if (ext.description.includes("—")) throw new Error(`em dash in the extension text: ${ext.description}`);
+});

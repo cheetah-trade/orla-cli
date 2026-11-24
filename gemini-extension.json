@@ -1,0 +1,10 @@
+{
+  "name": "orla",
+  "version": "0.5.3",
+  "description": "Your own Orla books in Gemini CLI: read and record transactions, categories, budgets and reports over the personal MCP connection. No tool here moves money.",
+  "mcpServers": {
+    "orla": {
+      "httpUrl": "https://app.orla.finance/api/mcp/personal"
+    }
+  }
+}

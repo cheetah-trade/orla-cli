@@ -229,6 +229,22 @@ submission through OpenAI's portal, made by the account that owns the listing.
 one address, and keeps the directory text free of plans and upgrades, which the
 ChatGPT plugin rules do not allow.
 
+## As a Gemini CLI extension
+
+`gemini-extension.json` at the root makes this repository a Gemini CLI
+extension: one server, the personal door over streamable HTTP, and no local
+command. To install it:
+
+```
+gemini extensions install https://github.com/cheetah-trade/orla-cli
+```
+
+The first tool call opens Orla's consent page in your browser, so it needs a
+machine with one. Gemini CLI is a client Orla has not met on a live connection
+yet, so the page names it as an unfamiliar client and shows where the code goes.
+The extension gallery finds the repository by this file and the
+`gemini-cli-extension` topic.
+
 ## Where the token lives
 
 The OS keychain: `security` on macOS, `secret-tool` on Linux. Where neither

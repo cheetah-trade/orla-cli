@@ -1,10 +1,12 @@
 /**
  * Carry the package version into the plugin manifest.
  *
- * Four files in this repository name a version, and they ship together: npm
+ * Five files in this repository name a version, and they ship together: npm
  * installs `orla-cli`, `/plugin install orla@orla` installs the skills next to
- * it, `plugin.json` is the same plugin for ChatGPT and Codex, and `server.json`
- * is the entry a client or a directory resolves the server by. `npm version`
+ * it, `plugin.json` is the same plugin for ChatGPT and Codex,
+ * `gemini-extension.json` is the Gemini CLI extension (its gallery indexes this
+ * repository by that file), and `server.json` is the entry a client or a
+ * directory resolves the server by. `npm version`
  * only knows about the first one, so without this the others silently stay a
  * release behind: the registry entry did exactly that and sat at 0.1.2 while the
  * package was 0.2.1.
@@ -19,8 +21,13 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 // The Claude Code manifest and the portable one ChatGPT and Codex read (Agent
-// Plugins 1.0.0): two descriptions of one plugin, released together.
-const MANIFESTS = [join(ROOT, ".claude-plugin", "plugin.json"), join(ROOT, "plugin.json")];
+// Plugins 1.0.0): two descriptions of one plugin, released together. The Gemini
+// CLI extension is the same door described for Gemini, at the same version.
+const MANIFESTS = [
+  join(ROOT, ".claude-plugin", "plugin.json"),
+  join(ROOT, "plugin.json"),
+  join(ROOT, "gemini-extension.json"),
+];
 const REGISTRY = join(ROOT, "server.json");
 
 const { version } = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
