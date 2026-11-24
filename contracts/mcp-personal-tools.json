@@ -262,6 +262,58 @@
     },
     {
       "arguments": [
+        "account_name",
+        "currency",
+        "deadline",
+        "icon",
+        "idempotency_key",
+        "mode",
+        "name",
+        "rationale",
+        "space_id",
+        "starting_amount",
+        "target"
+      ],
+      "destructive": false,
+      "name": "orla_create_goal",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "name",
+        "space_id",
+        "target"
+      ]
+    },
+    {
+      "arguments": [
+        "amount",
+        "category",
+        "currency",
+        "day",
+        "ends_on",
+        "frequency",
+        "idempotency_key",
+        "kind",
+        "month",
+        "name",
+        "pay_from",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_create_recurring_plan",
+      "readOnly": false,
+      "required": [
+        "amount",
+        "day",
+        "idempotency_key",
+        "name",
+        "pay_from",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "attachment_id",
         "idempotency_key",
         "rationale",
@@ -964,6 +1016,22 @@
     },
     {
       "arguments": [
+        "idempotency_key",
+        "name",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_hide_recurring_suggestion",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "name",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "accept_balance_break",
         "accept_holder",
         "account_id",
@@ -1084,6 +1152,19 @@
     },
     {
       "arguments": [
+        "name",
+        "space_id",
+        "status"
+      ],
+      "destructive": false,
+      "name": "orla_list_goals",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "contact_id",
         "limit",
         "offset",
@@ -1147,6 +1228,44 @@
       "name": "orla_list_views",
       "readOnly": true,
       "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "idempotency_key",
+        "paid",
+        "period",
+        "plan",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_mark_plan_paid",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "plan",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "from",
+        "goal",
+        "idempotency_key",
+        "kind",
+        "rationale",
+        "space_id",
+        "to",
+        "words"
+      ],
+      "destructive": false,
+      "name": "orla_mark_toward_goal",
+      "readOnly": false,
+      "required": [
+        "goal",
+        "idempotency_key",
         "space_id"
       ]
     },
@@ -1544,6 +1663,22 @@
         "import_mark",
         "preview_id",
         "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "idempotency_key",
+        "rationale",
+        "space_id",
+        "undo_token"
+      ],
+      "destructive": true,
+      "name": "orla_undo_planning_change",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "space_id",
+        "undo_token"
       ]
     },
     {
