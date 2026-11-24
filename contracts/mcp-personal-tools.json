@@ -1628,6 +1628,7 @@
       "name": "orla_upload_document",
       "readOnly": false,
       "required": [
+        "content_base64",
         "filename",
         "idempotency_key",
         "space_id"
