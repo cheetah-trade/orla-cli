@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-23 19:59)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-24 02:26)
 
-Window (UTC): 2026-11-16 18:59:46 – 2026-11-23 18:59:46, every run listed.
+Window (UTC): 2026-11-17 01:26:17 – 2026-11-24 01:26:17, every run listed.
 
 ## CI by workflow
 
@@ -8,19 +8,21 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 
 | Workflow | Runs | Failed | Not run yet | Failure rate | Reruns | Median min | p90 min |
 |---|---|---|---|---|---|---|---|
-| ci | 117 | 9 | 0 | 8% | 1 | 0.7 | 0.8 |
-| dco | 78 | 9 | 0 | 12% | 0 | 0.1 | 0.2 |
-| Dependabot Updates | 12 | 0 | 0 | 0% | 0 | 0.7 | 0.8 |
+| ci | 129 | 9 | 0 | 7% | 1 | 0.7 | 0.8 |
+| dco | 87 | 11 | 0 | 13% | 0 | 0.1 | 0.2 |
+| Dependabot Updates | 14 | 0 | 0 | 0% | 0 | 0.8 | 0.8 |
 | release | 4 | 0 | 0 | 0% | 0 | 0.6 | 0.8 |
 
 ## Where it fails (jobs of recent failed runs)
 
-- dco / signed-off: 9
+- dco / signed-off: 11
 - ci / windows: 9
 - ci / check: 3
 
 ## Why runs fail (error lines of recent failed runs)
 
+- 1× # (README и описание плагина: шесть готовых сценариев личной двери (#)) has no Signed-off-by line
+- 1× # (Контракт: что требует внимания на личной двери (#)) has no Signed-off-by line
 - 1× # (Контракт: сверка одного счёта против книги (896d)) has no Signed-off-by line
 - 1× # (Контракт: напоминание по счёту клиенту и ссылка на оплату (180e)) has no Signed-off-by line
 - 1× # (Контракт: orla_set_up_books, настройка книг из чата (37ce)) has no Signed-off-by line
@@ -43,5 +45,5 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 
 ## Pull requests
 
-- Merged, complete UTC days: 29 without bots (0 by bots left out); to merge, bots excluded: median 0.0 h, p90 1.3 h.
-- Open (not drafts): 4; oldest: #28 build(deps): Bump actions/checkout from 4 to 7 (3.0 d); #29 build(deps): Bump actions/setup-node from 4 to 7 (3.0 d); #30 build(deps-dev): Bump @types/node from 22.20.1 to 26.6.6 (3.0 d); #31 build(deps-dev): Bump typescript from 5.9.3 to 7.0.2 (3.0 d).
+- Merged, complete UTC days: 41 without bots (0 by bots left out); to merge, bots excluded: median 0.0 h, p90 1.3 h.
+- Open (not drafts): 6; oldest: #28 build(deps): Bump actions/checkout from 4 to 7 (3.2 d); #29 build(deps): Bump actions/setup-node from 4 to 7 (3.2 d); #30 build(deps-dev): bump @types/node from 22.20.1 to 26.6.6 (3.2 d); #31 build(deps-dev): bump typescript from 5.9.3 to 7.0.2 (3.2 d); #66 Контракт: что требует внимания на личной двери (7263) (0.0 d).
