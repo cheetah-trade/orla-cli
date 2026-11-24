@@ -997,6 +997,7 @@
     },
     {
       "arguments": [
+        "probe_only",
         "space_id"
       ],
       "destructive": false,
