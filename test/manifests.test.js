@@ -122,5 +122,13 @@ test("the Gemini CLI extension is the same door at the same version", () => {
   if (server.url || server.command || server.args || server.headers) {
     throw new Error("the extension reaches the door over streamable HTTP only, with no local command and no headers");
   }
+  // The door registers no clients (no registration_endpoint, only client id
+  // metadata documents), and Gemini CLI without a clientId stops with "No
+  // client ID provided and dynamic registration not supported". The client id
+  // is our own document for it, served at that address by the site.
+  if (server.oauth?.enabled !== true || server.oauth?.clientId !== "https://orla.finance/mcp-gemini-cli.json") {
+    throw new Error(`gemini-extension.json signs in as ${JSON.stringify(server.oauth)}`);
+  }
+  if (server.oauth.clientSecret) throw new Error("a public client carries no secret");
   if (ext.description.includes("—")) throw new Error(`em dash in the extension text: ${ext.description}`);
 });
