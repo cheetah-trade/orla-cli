@@ -98,8 +98,8 @@ skills in `skills/` ship from the same tag as the package. Two things keep that
 honest without anybody remembering them:
 
 - `npm version` runs `scripts/sync-plugin-version.mjs`, which carries the new
-  version into `.claude-plugin/plugin.json` and into `server.json`, and stages
-  both, so neither lands a release behind.
+  version into `.claude-plugin/plugin.json`, `plugin.json`,
+  `gemini-extension.json` and `server.json`, and stages them, so none lands a release behind.
 - `test/skills.test.js` refuses either mismatch, and checks every tool and
   argument the skills name against `contracts/mcp-personal-tools.json`.
 
