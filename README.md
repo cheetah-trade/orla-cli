@@ -204,6 +204,26 @@ busy month is read month by month rather than in one gulp.
 `contracts/mcp-personal-tools.json` is the committed shape of that door, and
 `test/skills.test.js` checks every tool and argument the skills name against it.
 
+### Ready scenarios
+
+The personal door also offers six ready scenarios (MCP prompts) to any client
+that shows them. Pick one and it starts the job without you writing the
+request first.
+
+| Scenario | What it does |
+|---|---|
+| Set up my books | What is left to set up in your Orla books, one step at a time: what the books are for, a first bank statement or account, categories. Creates or records only what you approve. |
+| Review a month | Where the money went in one month: spending by category, budgets, the change from the month before, recurring payments and cash flow. Reads only. |
+| Sort uncategorized transactions | Finds transactions with no category, proposes a category for each group, and changes only what you approve after a preview. |
+| Month-close checklist | What is left before a month is closed: transactions without a category, expenses missing a document, budgets, supplier bills due, payments waiting for a signature, what is owed. Reads only. |
+| Settle shared expenses | Who owes whom in a group or family space, why, and how to settle in the fewest payments. Records new shared expenses only after you approve the list. |
+| Import a bank statement | Books a bank statement file into an account. You see every row first, and nothing is booked until you approve. |
+
+A scenario is a prepared message placed in the conversation for you. It
+carries none of your data and asks for nothing the door does not already
+allow. A client that does not show prompts works as before, and the skills
+above do the same jobs.
+
 ## As a ChatGPT or Codex plugin
 
 The same plugin is described a second time in the portable Agent Plugins format
