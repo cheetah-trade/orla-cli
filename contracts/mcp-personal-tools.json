@@ -35,6 +35,7 @@
         "amount",
         "currency",
         "description",
+        "dry_run",
         "idempotency_key",
         "note",
         "occurred_on",
@@ -58,6 +59,7 @@
       "arguments": [
         "category_id",
         "clear_category",
+        "dry_run",
         "idempotency_key",
         "note",
         "payee",
@@ -78,6 +80,7 @@
     {
       "arguments": [
         "document_id",
+        "dry_run",
         "idempotency_key",
         "rationale",
         "space_id",
@@ -109,6 +112,7 @@
         "account_id",
         "amount",
         "category_id",
+        "dry_run",
         "idempotency_key",
         "kind",
         "note",
@@ -232,6 +236,7 @@
     {
       "arguments": [
         "currency",
+        "dry_run",
         "idempotency_key",
         "kind",
         "name",
@@ -252,6 +257,7 @@
     {
       "arguments": [
         "document_id",
+        "dry_run",
         "idempotency_key",
         "preview_id",
         "rationale",
@@ -274,6 +280,7 @@
         "amount_min",
         "category_id",
         "contact_id",
+        "dry_run",
         "idempotency_key",
         "match_type",
         "note_pattern",
@@ -297,6 +304,7 @@
         "city",
         "contact_email",
         "country",
+        "dry_run",
         "idempotency_key",
         "kind",
         "name",
@@ -325,6 +333,7 @@
         "account_name",
         "currency",
         "deadline",
+        "dry_run",
         "icon",
         "idempotency_key",
         "mode",
@@ -346,6 +355,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "frequency",
         "idempotency_key",
         "invoice_id",
@@ -371,6 +381,7 @@
         "category",
         "currency",
         "day",
+        "dry_run",
         "ends_on",
         "frequency",
         "idempotency_key",
@@ -396,6 +407,7 @@
     {
       "arguments": [
         "attachment_id",
+        "dry_run",
         "idempotency_key",
         "rationale",
         "space_id"
@@ -414,6 +426,7 @@
         "account_id",
         "contact_id",
         "currency",
+        "dry_run",
         "due_on",
         "idempotency_key",
         "lines",
@@ -654,6 +667,17 @@
       ],
       "destructive": false,
       "name": "orla_get_contract_gaps",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_debtors",
       "readOnly": true,
       "required": [
         "space_id"
@@ -1049,6 +1073,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "idempotency_key",
         "name",
         "rationale",
@@ -1069,6 +1094,7 @@
         "accept_holder",
         "account_id",
         "document_id",
+        "dry_run",
         "idempotency_key",
         "preview_id",
         "rationale",
@@ -1291,6 +1317,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "idempotency_key",
         "paid",
         "period",
@@ -1309,6 +1336,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "from",
         "goal",
         "idempotency_key",
@@ -1562,6 +1590,7 @@
       "arguments": [
         "category_id",
         "clear_category",
+        "dry_run",
         "idempotency_key",
         "preview_id",
         "rationale",
@@ -1607,6 +1636,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "error_code",
         "kind",
         "rationale",
@@ -1624,6 +1654,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "idempotency_key",
         "invoice_id",
         "preview_id",
@@ -1642,6 +1673,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "idempotency_key",
         "invoice",
         "preview_id",
@@ -1662,6 +1694,7 @@
       "arguments": [
         "amount",
         "budget_id",
+        "dry_run",
         "idempotency_key",
         "rationale",
         "space_id"
@@ -1679,6 +1712,7 @@
     {
       "arguments": [
         "confirmed",
+        "dry_run",
         "idempotency_key",
         "kind",
         "name",
@@ -1705,6 +1739,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "idempotency_key",
         "parts",
         "rationale",
@@ -1736,6 +1771,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "idempotency_key",
         "import_mark",
         "preview_id",
@@ -1754,6 +1790,7 @@
     },
     {
       "arguments": [
+        "dry_run",
         "idempotency_key",
         "rationale",
         "space_id",
@@ -1771,6 +1808,7 @@
     {
       "arguments": [
         "category_id",
+        "dry_run",
         "idempotency_key",
         "rationale",
         "space_id",
@@ -1790,6 +1828,7 @@
         "city",
         "contact_id",
         "country",
+        "dry_run",
         "idempotency_key",
         "kind",
         "name",
@@ -1818,6 +1857,7 @@
         "account_id",
         "contact_id",
         "currency",
+        "dry_run",
         "due_on",
         "idempotency_key",
         "invoice_id",
@@ -1840,6 +1880,7 @@
       "arguments": [
         "content_base64",
         "content_type",
+        "dry_run",
         "filename",
         "idempotency_key",
         "rationale",
