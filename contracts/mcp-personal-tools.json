@@ -3,6 +3,10 @@
   "door": "personal connection (mcp_personal.PRESET, money tools withheld)",
   "left": [
     "orla_find_service",
+    "orla_get_cash_forecast",
+    "orla_get_cashflow",
+    "orla_get_net_worth",
+    "orla_get_tax_readiness",
     "orla_list_reports",
     "orla_read_report",
     "orla_risk_alerts",
@@ -584,31 +588,6 @@
     },
     {
       "arguments": [
-        "account",
-        "days",
-        "space_id"
-      ],
-      "destructive": false,
-      "name": "orla_get_cash_forecast",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "months",
-        "space_id"
-      ],
-      "destructive": false,
-      "name": "orla_get_cashflow",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
         "months",
         "space_id"
       ],
@@ -833,17 +812,6 @@
         "space_id"
       ],
       "destructive": false,
-      "name": "orla_get_net_worth",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "space_id"
-      ],
-      "destructive": false,
       "name": "orla_get_paid_out_ahead",
       "readOnly": true,
       "required": [
@@ -955,18 +923,6 @@
       ],
       "destructive": false,
       "name": "orla_get_spending_by_category",
-      "readOnly": true,
-      "required": [
-        "space_id"
-      ]
-    },
-    {
-      "arguments": [
-        "space_id",
-        "year"
-      ],
-      "destructive": false,
-      "name": "orla_get_tax_readiness",
       "readOnly": true,
       "required": [
         "space_id"

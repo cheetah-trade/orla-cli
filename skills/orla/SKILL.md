@@ -226,7 +226,7 @@ from it, and its `next_step` says what to do first in a space with no account.
 | Question | Tool |
 |---|---|
 | Which spaces, which role, what may I do | `orla_whoami` |
-| Any summary: cash flow, spend by category, what is owed, bills due, VAT, loans | `orla_get_spending_by_category`, `orla_get_cashflow`, `orla_get_receivables_and_payables`, `orla_get_bills_due`, `orla_get_vat_summary`, `orla_get_loans` |
+| Any summary: cash flow, spend by category, what is owed, bills due, VAT, loans | `orla_get_spending_by_category`, `orla_cash_flow`, `orla_get_receivables_and_payables`, `orla_get_bills_due`, `orla_get_vat_summary`, `orla_get_loans` |
 | Rows, by date, search, account, or only the uncategorized | `orla_list_transactions` |
 | Accounts and balances, categories, net worth | `orla_list_accounts`, `orla_list_categories`, `orla_net_worth` |
 | Budgets and what was spent against them; change a limit | `orla_list_budgets`; `orla_set_budget` |
