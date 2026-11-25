@@ -233,6 +233,24 @@
     },
     {
       "arguments": [
+        "document_id",
+        "idempotency_key",
+        "preview_id",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_create_bill_from_document",
+      "readOnly": false,
+      "required": [
+        "document_id",
+        "idempotency_key",
+        "preview_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "account_id",
         "amount_max",
         "amount_min",
@@ -1409,6 +1427,19 @@
       "name": "orla_owed_by_age",
       "readOnly": true,
       "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "document_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_preview_bill_from_document",
+      "readOnly": true,
+      "required": [
+        "document_id",
         "space_id"
       ]
     },
