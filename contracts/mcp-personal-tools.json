@@ -1741,7 +1741,7 @@
         "rationale",
         "space_id"
       ],
-      "destructive": false,
+      "destructive": true,
       "name": "orla_undo_import",
       "readOnly": false,
       "required": [
