@@ -21,7 +21,7 @@ there, not with pages of rows you add up yourself.
 ```
 orla_whoami                                   -> space id, masked, accounts_restricted
 orla_get_spending_by_category(space_id, month) -> where the month's money went
-orla_get_cashflow(space_id, months)           -> money in and out, month by month
+orla_cash_flow(space_id, months)              -> money in and out, month by month
 orla_get_top_payees(space_id, month, limit)   -> who got the most
 orla_get_bills_due(space_id)                  -> supplier bills still to pay
 orla_get_receivables_and_payables(space_id)   -> what is owed to and by the space
