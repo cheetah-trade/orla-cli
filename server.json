@@ -3,7 +3,7 @@
   "name": "finance.orla/orla",
   "title": "Orla",
   "description": "Bookkeeping for people and growing businesses, from your own books. It cannot move money.",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "websiteUrl": "https://www.orla.finance/en/mcp-claude?utm_source=directory&utm_medium=mcp&utm_campaign=mcp-registry",
   "repository": {
     "url": "https://github.com/cheetah-trade/orla-cli",
@@ -20,7 +20,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "orla-cli",
-      "version": "0.5.3",
+      "version": "0.5.4",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

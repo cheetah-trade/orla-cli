@@ -1,11 +1,12 @@
 {
   "name": "orla",
   "description": "Bookkeeping skills over your own Orla books, on the personal MCP connection. No tool here moves money.",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "author": {
     "name": "Digital Flow Pte. Ltd."
   },
   "homepage": "https://orla.finance/en/ai-agents/api",
+  "privacyPolicyUrl": "https://orla.finance/en/privacy",
   "repository": "https://github.com/cheetah-trade/orla-cli",
   "license": "MIT"
 }
