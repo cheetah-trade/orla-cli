@@ -24,12 +24,14 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 // The Claude Code manifest and the portable one ChatGPT and Codex read (Agent
 // Plugins 1.0.0): two descriptions of one plugin, released together. The Gemini
 // CLI extension is the same door described for Gemini, at the same version, and
-// the Antigravity manifest (nested, since the root `plugin.json` is taken) too.
+// the Antigravity manifest (nested, since the root `plugin.json` is taken) too,
+// and so is the Cursor plugin (its manifest also nests, in `.cursor-plugin/`).
 const MANIFESTS = [
   join(ROOT, ".claude-plugin", "plugin.json"),
   join(ROOT, "plugin.json"),
   join(ROOT, "gemini-extension.json"),
   join(ROOT, ".antigravity-plugin", "plugin.json"),
+  join(ROOT, ".cursor-plugin", "plugin.json"),
 ];
 const REGISTRY = join(ROOT, "server.json");
 

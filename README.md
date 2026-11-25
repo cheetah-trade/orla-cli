@@ -293,6 +293,31 @@ Press Authenticate next to Orla: Orla's consent page opens in your browser,
 you pick the spaces Antigravity may see, and Allow. Antigravity signs in with
 its own client document, `https://antigravity.google/oauth/client-metadata.json`.
 
+## As a Cursor plugin
+
+`.cursor-plugin/plugin.json` makes this repository a Cursor plugin: the
+personal door over HTTP and the skills in `skills/`, with no local command.
+Install it from the Cursor marketplace, or try it locally: copy the repository
+to `~/.cursor/plugins/local/orla/` and run Developer: Reload Window.
+
+Or add the door by hand in `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "orla": {
+      "url": "https://app.orla.finance/api/mcp/personal",
+      "auth": { "CLIENT_ID": "https://cursor.com/oauth/mcp-client.json" }
+    }
+  }
+}
+```
+
+The `auth` block matters: Orla registers no clients on the fly, and Cursor
+signs in with its own client document. Press Connect next to Orla: Orla's
+consent page opens in your browser, you pick the spaces Cursor may see, and
+Allow. Nothing on this connection moves money.
+
 ## Where the token lives
 
 The OS keychain: `security` on macOS, `secret-tool` on Linux. Where neither
