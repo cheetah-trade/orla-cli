@@ -1637,6 +1637,23 @@
     {
       "arguments": [
         "dry_run",
+        "idempotency_key",
+        "period",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_request_month_close",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "period",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "dry_run",
         "error_code",
         "kind",
         "rationale",
