@@ -170,3 +170,25 @@ test("the Antigravity plugin is the same door at the same version", () => {
   const extra = Object.keys(server).filter((k) => k !== "serverUrl");
   if (extra.length) throw new Error(`mcp_config.json also sets ${extra.join(", ")}`);
 });
+
+test("the Cursor plugin is the same plugin, signs in as Cursor and ships the skills", () => {
+  const cursor = read(".cursor-plugin/plugin.json");
+  const pkg = read("package.json");
+  if (cursor.name !== read(".claude-plugin/plugin.json").name) throw new Error(`the Cursor plugin is ${cursor.name}`);
+  if (cursor.version !== pkg.version) throw new Error(`the Cursor plugin is ${cursor.version}, package.json ${pkg.version}`);
+  const servers = Object.entries(cursor.mcpServers ?? {});
+  if (servers.length !== 1) throw new Error(`the Cursor plugin declares ${servers.length} servers, expected one`);
+  const [name, server] = servers[0];
+  if (name !== "orla") throw new Error(`the server is named ${name}`);
+  if (server.url !== PERSONAL_DOOR) throw new Error(`the Cursor plugin points at ${server.url}`);
+  if (server.command || server.args || server.headers) throw new Error("the Cursor plugin runs no command and carries no header");
+  // Orla has no dynamic registration: Cursor signs in by its own client document (24.11.2026).
+  if (server.auth?.CLIENT_ID !== "https://cursor.com/oauth/mcp-client.json") {
+    throw new Error(`the Cursor plugin signs in as ${server.auth?.CLIENT_ID}`);
+  }
+  if (!existsSync(join(ROOT, cursor.logo))) throw new Error(`the logo ${cursor.logo} is not here`);
+  if (cursor.skills !== "skills" || !existsSync(join(ROOT, "skills", "orla", "SKILL.md"))) {
+    throw new Error("the Cursor plugin does not ship the skills");
+  }
+  if (/plan|upgrade|pricing|subscription/i.test(cursor.description)) throw new Error("the Cursor card promotes a plan");
+});

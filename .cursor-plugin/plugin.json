@@ -1,0 +1,28 @@
+{
+  "name": "orla",
+  "version": "0.5.3",
+  "description": "Your own Orla books in Cursor: read and record transactions, categories, budgets and reports over the personal connection, with five bookkeeping skills. It cannot move money.",
+  "author": {
+    "name": "Digital Flow Pte. Ltd."
+  },
+  "homepage": "https://orla.finance/en/mcp",
+  "repository": "https://github.com/cheetah-trade/orla-cli",
+  "license": "MIT",
+  "keywords": [
+    "bookkeeping",
+    "budgets",
+    "personal-finance",
+    "small-business",
+    "mcp"
+  ],
+  "logo": "assets/logo.png",
+  "skills": "skills",
+  "mcpServers": {
+    "orla": {
+      "url": "https://app.orla.finance/api/mcp/personal",
+      "auth": {
+        "CLIENT_ID": "https://cursor.com/oauth/mcp-client.json"
+      }
+    }
+  }
+}
