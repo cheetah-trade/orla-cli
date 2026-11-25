@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-25 04:25)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-25 04:30)
 
-Window (UTC): 2026-11-18 03:25:19 – 2026-11-25 03:25:19, every run listed.
+Window (UTC): 2026-11-18 03:30:43 – 2026-11-25 03:30:43, every run listed.
 
 ## CI by workflow
 
