@@ -1317,6 +1317,28 @@
     },
     {
       "arguments": [
+        "amount",
+        "bill_id",
+        "dry_run",
+        "idempotency_key",
+        "preview_id",
+        "rationale",
+        "space_id",
+        "transaction_id"
+      ],
+      "destructive": false,
+      "name": "orla_mark_bill_paid_outside",
+      "readOnly": false,
+      "required": [
+        "bill_id",
+        "idempotency_key",
+        "preview_id",
+        "space_id",
+        "transaction_id"
+      ]
+    },
+    {
+      "arguments": [
         "dry_run",
         "idempotency_key",
         "paid",
@@ -1438,6 +1460,21 @@
       "readOnly": true,
       "required": [
         "document_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "amount",
+        "bill_id",
+        "space_id",
+        "transaction_id"
+      ],
+      "destructive": false,
+      "name": "orla_preview_bill_paid_outside",
+      "readOnly": true,
+      "required": [
+        "bill_id",
         "space_id"
       ]
     },
