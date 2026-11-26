@@ -765,6 +765,17 @@
     },
     {
       "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_forwarding_address",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "month",
         "space_id"
       ],
