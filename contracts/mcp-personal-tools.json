@@ -1433,6 +1433,7 @@
     {
       "arguments": [
         "account_id",
+        "direction",
         "limit",
         "month",
         "months",
