@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "orla",
-  "version": "0.5.4",
-  "description": "Bookkeeping for people and growing businesses, from your own books: your assistant books a bank statement after you check the rows, sorts expenses, drafts invoices. It cannot move money.",
+  "version": "0.5.5",
+  "description": "Bookkeeping for growing businesses and people: your assistant books a bank statement after you check the rows, sorts expenses, drafts invoices, shows what a month needs to close. No money moves.",
   "author": {
     "name": "Digital Flow Pte. Ltd.",
     "url": "https://orla.finance"
@@ -23,7 +23,7 @@
       "interface": {
         "displayName": "Orla",
         "shortDescription": "Books for growing businesses",
-        "longDescription": "Hand your assistant a bank statement: it shows the rows it would book and why any would not, then books exactly those after your yes. Then ask where the money went last month, what is due this week, what you are worth today, who owes whom.\n\nOrla keeps the books for people and growing businesses whose money sits in more than one place: bank accounts, cards, cash, crypto wallets and exchanges, invoices out and bills in.\n\nWhat your assistant can read: accounts and balances, transactions, categories and their rules, budgets, net worth, savings goals, shared expenses, contacts, invoices and supplier bills, payments waiting for a signature, and Orla's own reports: spending by category, cash flow, bills due, VAT, loans and debts, trial balance. Account reconciliation and a few business reports come with Orla Pro.\n\nWhat it can record: a transaction and fixes to its category, payee, note or tags; a split by category; a category rule for what comes next; a budget limit, a savings goal, a recurring payment on the calendar; a contact; a file in Documents or on a transaction; the rows of a bank statement, which it can take back out within 7 days. A change to many rows is shown first, then applied exactly as shown. Amount, date and account cannot be edited.\n\nInvoices: it drafts an invoice to a client from your contacts. It emails an invoice or a payment reminder only as previewed, letter and recipients, and only if you ticked sending that kind of letter on the consent screen.\n\nIt cannot move money. No payment, transfer or card tool is on this connection. In Orla, money leaves only by a payment or a mandate a person signed.\n\nOn the consent screen you pick the spaces it may see and whether card numbers, IBANs and wallet addresses come in full or masked to a short tail (the default). You can disconnect any time.\n\nA free Orla account is enough to connect. On Free: 50 recorded entries and 3 invoices a month; reading a statement file uses the monthly AI allowance, about four statements.",
+        "longDescription": "Hand your assistant a bank statement (PDF, photo or CSV): it shows the rows it would book, why any would not and whether the printed balances add up, then books exactly those after your yes. Then ask what the month lacks: payments with no document, bills waiting, whether it is ready to close.\n\nOrla keeps the books for growing businesses and people whose money sits in banks, cards, cash and crypto.\n\nWhat it can read: accounts and last sync, transactions, categories, budgets, net worth, goals, contacts, invoices, supplier bills (flagged on new bank details or a likely duplicate), and Orla's reports: spending, cash flow, VAT, loans, trial balance.\n\nWhat it can record: a transaction and fixes to its category, payee, note or tags; a split; a category rule; a budget, a goal, a recurring payment; a contact; a file on a transaction; a supplier bill from a file, waiting for you to accept it; a bill paid outside Orla, tied to its bank row. A statement can be taken back out within 7 days. Changes to many rows are shown first. Amount, date and account cannot be edited.\n\nIt drafts invoices to your contacts and emails an invoice or reminder only as previewed, if you ticked that letter on the consent screen.\n\nOn paid plans: routines, questions Orla answers on a schedule by email or Telegram; and, if your assistant can read your mailbox, it lists a month of bills and receipts and, after one yes, forwards them to your space's bills address.\n\nWith Orla Pro: reconciliation, a request to close a ready month that you confirm in Orla, the investor update with its reconciliation status, and business reports.\n\nIt cannot move money: this connection has no payment, transfer or card tool.\n\nOn the consent screen you pick the spaces and whether card numbers, IBANs and wallet addresses show in full or masked (default).\n\nA free account is enough. On Free: 50 recorded entries and 3 invoices a month, your first statement counts as one; reading a statement uses the AI allowance, about four a month.",
         "developerName": "Digital Flow Pte. Ltd.",
         "category": "Finance",
         "capabilities": [
@@ -83,8 +83,8 @@
               "prompt": "Pay this supplier bill."
             },
             {
-              "description": "Counterparty and fraud checks are not on this connection",
-              "prompt": "Check this counterparty for fraud."
+              "description": "Approving a waiting payment is not possible",
+              "prompt": "Approve the payments waiting in my queue."
             },
             {
               "description": "Transfers and card details are not offered",
