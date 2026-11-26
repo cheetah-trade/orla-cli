@@ -406,6 +406,48 @@
     },
     {
       "arguments": [
+        "channel",
+        "day_of_month",
+        "dry_run",
+        "every",
+        "hour",
+        "idempotency_key",
+        "minute",
+        "question",
+        "rationale",
+        "space_id",
+        "template",
+        "weekday"
+      ],
+      "destructive": false,
+      "name": "orla_create_routine",
+      "readOnly": false,
+      "required": [
+        "every",
+        "hour",
+        "idempotency_key",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "dry_run",
+        "idempotency_key",
+        "rationale",
+        "routine_id",
+        "space_id"
+      ],
+      "destructive": true,
+      "name": "orla_delete_routine",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "routine_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "attachment_id",
         "dry_run",
         "idempotency_key",
@@ -1279,6 +1321,17 @@
         "space_id"
       ],
       "destructive": false,
+      "name": "orla_list_routines",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
       "name": "orla_list_shared_expenses",
       "readOnly": true,
       "required": [
@@ -1452,6 +1505,24 @@
     },
     {
       "arguments": [
+        "dry_run",
+        "idempotency_key",
+        "paused",
+        "rationale",
+        "routine_id",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_pause_routine",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "routine_id",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "document_id",
         "space_id"
       ],
@@ -1566,6 +1637,27 @@
       "required": [
         "space_id",
         "transaction_ids"
+      ]
+    },
+    {
+      "arguments": [
+        "channel",
+        "day_of_month",
+        "every",
+        "hour",
+        "minute",
+        "question",
+        "space_id",
+        "template",
+        "weekday"
+      ],
+      "destructive": false,
+      "name": "orla_preview_routine",
+      "readOnly": true,
+      "required": [
+        "every",
+        "hour",
+        "space_id"
       ]
     },
     {
