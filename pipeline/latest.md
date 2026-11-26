@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-26 05:53)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-26 12:17)
 
-Window (UTC): 2026-11-19 04:53:54 – 2026-11-26 04:53:54, every run listed.
+Window (UTC): 2026-11-19 11:17:39 – 2026-11-26 11:17:39, every run listed.
 
 ## CI by workflow
 
@@ -48,4 +48,4 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 ## Pull requests
 
 - Merged, complete UTC days: 64 without bots (0 by bots left out); to merge, bots excluded: median 0.0 h, p90 1.3 h.
-- Open (not drafts): 4; oldest: #28 build(deps): bump actions/checkout from 4 to 7 (5.4 d); #29 build(deps): bump actions/setup-node from 4 to 7 (5.4 d); #30 build(deps-dev): bump @types/node from 22.20.1 to 26.6.6 (5.4 d); #31 build(deps-dev): bump typescript from 5.9.3 to 7.0.2 (5.4 d).
+- Open (not drafts): 4; oldest: #28 build(deps): bump actions/checkout from 4 to 7 (5.6 d); #29 build(deps): bump actions/setup-node from 4 to 7 (5.6 d); #30 build(deps-dev): bump @types/node from 22.20.1 to 26.6.6 (5.6 d); #31 build(deps-dev): bump typescript from 5.9.3 to 7.0.2 (5.6 d).
