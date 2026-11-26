@@ -1,6 +1,6 @@
-# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-26 12:17)
+# Pipeline of cheetah-trade/orla-cli, last 7 days (collected 2026-11-26 18:38)
 
-Window (UTC): 2026-11-19 11:17:39 – 2026-11-26 11:17:39, every run listed.
+Window (UTC): 2026-11-19 17:38:46 – 2026-11-26 17:38:46, every run listed.
 
 ## CI by workflow
 
@@ -8,8 +8,8 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 
 | Workflow | Runs | Failed | Not run yet | Failure rate | Reruns | Median min | p90 min |
 |---|---|---|---|---|---|---|---|
-| ci | 202 | 13 | 0 | 6% | 3 | 0.7 | 0.8 |
-| dco | 135 | 14 | 0 | 10% | 0 | 0.1 | 0.2 |
+| ci | 208 | 13 | 0 | 6% | 4 | 0.7 | 0.8 |
+| dco | 139 | 15 | 0 | 11% | 0 | 0.1 | 0.2 |
 | Dependabot Updates | 22 | 0 | 0 | 0% | 0 | 0.8 | 0.8 |
 | release | 5 | 0 | 0 | 0% | 0 | 0.7 | 3.7 |
 
@@ -22,6 +22,7 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 
 ## Why runs fail (error lines of recent failed runs)
 
+- 1× # (Merge branch 'main' into contract/missing-receipts-direction-fbf6) has no Signed-off-by line
 - 1× # (Merge branch 'main' into contract/upload-content-text) has no Signed-off-by line
 - 1× # (Contract copy: orla_accountant_export, the accountant's files as links into Orla (ledgerly 27c2)) has no Signed-off-by line
 - 1× # (Merge branch 'main' into growing-businesses) has no Signed-off-by line
@@ -33,7 +34,6 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 - 1× # (contract: копия контракта личной двери на девять новых инструментов) has no Signed-off-by line
 - 1× # (contracts: the address book on the personal door (find, read, add, correct a contact)) has no Signed-off-by line
 - 1× # (Merge origin/main into feat/codex-chatgpt-manifests) has no Signed-off-by line
-- 1× # (Merge remote-tracking branch 'origin/main' into skills-twenty-tools) has no Signed-off-by line
 
 ## Tests that fail (recent failed runs)
 
@@ -48,4 +48,4 @@ Not run yet: red only because a two-tier CI has not run its suites yet (light ti
 ## Pull requests
 
 - Merged, complete UTC days: 64 without bots (0 by bots left out); to merge, bots excluded: median 0.0 h, p90 1.3 h.
-- Open (not drafts): 4; oldest: #28 build(deps): bump actions/checkout from 4 to 7 (5.6 d); #29 build(deps): bump actions/setup-node from 4 to 7 (5.6 d); #30 build(deps-dev): bump @types/node from 22.20.1 to 26.6.6 (5.6 d); #31 build(deps-dev): bump typescript from 5.9.3 to 7.0.2 (5.6 d).
+- Open (not drafts): 4; oldest: #28 build(deps): bump actions/checkout from 4 to 7 (5.9 d); #29 build(deps): bump actions/setup-node from 4 to 7 (5.9 d); #30 build(deps-dev): bump @types/node from 22.20.1 to 26.6.6 (5.9 d); #31 build(deps-dev): bump typescript from 5.9.3 to 7.0.2 (5.9 d).
