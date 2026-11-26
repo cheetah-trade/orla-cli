@@ -1896,6 +1896,7 @@
     {
       "arguments": [
         "content_base64",
+        "content_text",
         "content_type",
         "dry_run",
         "filename",
