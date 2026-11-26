@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.5
+
+- The contract follows the personal door of 26.11.2026, 136 tools: debtors,
+  `dry_run` on every write, a month close request, a supplier bill paid outside
+  Orla, routines, the space's forwarding address, `content_text` (a CSV as text)
+  on `orla_upload_document` and `direction` on `orla_missing_receipts`; the
+  second names of reports are gone.
+- The listing text in `plugin.json` (ChatGPT, Codex) is the one in Claude's
+  directory of 26.11.2026; a review case that said counterparty checks are not
+  on this connection is replaced, since `orla_counterparty_check` reads there.
+
 ## 0.5.3
 
 - Every request to Orla says who sent it: `User-Agent: orla-cli/<version>
