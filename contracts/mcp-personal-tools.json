@@ -543,6 +543,17 @@
     },
     {
       "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_approval_rules",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "space_id",
         "supplier"
       ],
@@ -1016,6 +1027,17 @@
       "required": [
         "space_id",
         "supplier_contract_id"
+      ]
+    },
+    {
+      "arguments": [
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_team_access",
+      "readOnly": true,
+      "required": [
+        "space_id"
       ]
     },
     {
