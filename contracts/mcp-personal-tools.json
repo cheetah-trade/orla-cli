@@ -1007,6 +1007,19 @@
     },
     {
       "arguments": [
+        "space_id",
+        "supplier_contract_id"
+      ],
+      "destructive": false,
+      "name": "orla_get_supplier_contract",
+      "readOnly": true,
+      "required": [
+        "space_id",
+        "supplier_contract_id"
+      ]
+    },
+    {
+      "arguments": [
         "limit",
         "month",
         "space_id"
@@ -1344,6 +1357,18 @@
       ],
       "destructive": false,
       "name": "orla_list_shared_expenses",
+      "readOnly": true,
+      "required": [
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
+        "q",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_list_supplier_contracts",
       "readOnly": true,
       "required": [
         "space_id"
