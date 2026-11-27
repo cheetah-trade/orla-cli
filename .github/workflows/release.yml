@@ -29,7 +29,7 @@ jobs:
     steps:
       # Pinned by commit, not by tag: this job holds `id-token: write`, and a
       # moved tag would run someone else's code with the right to publish.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # the whole history, so the tag can be checked against main below
           fetch-depth: 0
