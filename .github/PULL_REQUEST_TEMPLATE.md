@@ -10,3 +10,4 @@
 - [ ] `npm test` is green (it typechecks, builds and runs the suite)
 - [ ] Ran the changed command against a real connection
 - [ ] Commits are signed off (`git commit -s`)
+- [ ] Title, description and commit messages are in English

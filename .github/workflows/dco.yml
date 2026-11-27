@@ -2,6 +2,8 @@ name: dco
 
 on:
   pull_request:
+    # `edited` too: a title or a description fixed in place re-runs the check.
+    types: [opened, edited, reopened, synchronize]
 
 permissions:
   contents: read
@@ -32,3 +34,15 @@ jobs:
             exit 1
           fi
           echo "All commits signed off."
+      # This repository is public and is written in English. A squash merge puts
+      # the title and the commit messages on main for good, so they are read
+      # here, in the job the branch rules already require: a job of its own
+      # would only advise until the rules named it.
+      - name: The pull request and its commits are in English
+        if: ${{ !cancelled() }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/check-english.mjs --pr
