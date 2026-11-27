@@ -13,8 +13,8 @@
  *
  * It looks for Cyrillic letters, not for "anything outside ASCII": a payee's
  * name, a currency sign or a quote in another script is data, and stays. A
- * test that needs a Cyrillic payee writes it as an escape ("Ж"), which
- * this does not match.
+ * test that needs a Cyrillic payee builds it from code points
+ * (`String.fromCodePoint(0x416)`), which this does not match.
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";

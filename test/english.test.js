@@ -8,9 +8,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { cyrillicInPullRequest, cyrillicInTrackedFiles, cyrillicLines } from "../scripts/check-english.mjs";
 
-// Written as escapes, so that this file passes the check it tests.
-const RUSSIAN_TITLE = "Контракт: orla_list_views";
-const RUSSIAN_LINE = "копия контракта";
+// Built from code points, so that this file passes the check it tests.
+const cyrillic = (...codes) => String.fromCodePoint(...codes);
+const RUSSIAN_WORD = cyrillic(0x41a, 0x43e, 0x43d, 0x442, 0x440, 0x430, 0x43a, 0x442);
+const RUSSIAN_TITLE = `${RUSSIAN_WORD}: orla_list_views`;
+const RUSSIAN_LINE = `${cyrillic(0x43a, 0x43e, 0x43f, 0x438, 0x44f)} ${RUSSIAN_WORD.toLowerCase()}`;
 
 test("no tracked file carries Cyrillic text", () => {
   const found = cyrillicInTrackedFiles().map(({ file, line, text }) => `${file}:${line}: ${text}`);
