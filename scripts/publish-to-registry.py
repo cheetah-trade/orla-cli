@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
 """Publish server.json to the official MCP registry, without their CLI.
 
-    python3 scripts/publish-to-registry.py            # показать, что уйдёт
-    python3 scripts/publish-to-registry.py --apply    # опубликовать
+    python3 scripts/publish-to-registry.py            # show what would be sent
+    python3 scripts/publish-to-registry.py --apply    # publish
 
-Почему не `mcp-publisher`: по правилам этого проекта чужой бинарь, который
-запускается локально рядом с приватным ключом, проходит гейт цепочки поставок
-(`docs/security/skill-supply-chain-gate.md` в основном репозитории). Гейт стоит
-дороже, чем сам обмен: он состоит из двух запросов, и оба видно здесь целиком.
+Why not `mcp-publisher`: by this project's rules a third-party binary that runs
+locally next to a private key has to pass the supply chain gate
+(`docs/security/skill-supply-chain-gate.md` in the main repository). The gate
+costs more than the exchange itself: the exchange is two requests, and both are
+here in full.
 
-Протокол взят из исходников реестра (`cmd/publisher/auth/common.go`,
-`cmd/publisher/commands/publish.go`), а не из документации: она описывает только
-их CLI.
+The protocol is taken from the registry's sources (`cmd/publisher/auth/common.go`,
+`cmd/publisher/commands/publish.go`), not from its documentation, which only
+describes their CLI.
 
-  1. timestamp = текущее время UTC в RFC 3339
-  2. signature = Ed25519 по БАЙТАМ этой строки, в hex
+  1. timestamp = the current UTC time in RFC 3339
+  2. signature = Ed25519 over the BYTES of that string, in hex
   3. POST /v0/auth/dns {domain, timestamp, signed_timestamp} -> {registry_token}
-  4. POST /v0/publish с server.json и заголовком Authorization: Bearer <token>
+  4. POST /v0/publish with server.json and the header Authorization: Bearer <token>
 
-Домен доказывается TXT-записью на orla.finance (`v=MCPv1; k=ed25519; p=<ключ>`),
-она стоит с 28.08.2026. Приватная часть лежит в
-~/.claude/.secrets/orla-mcp-registry.env и сюда не копируется.
+The domain is proven by a TXT record on orla.finance (`v=MCPv1; k=ed25519; p=<key>`),
+in place since 28.08.2026. The private half lives in
+~/.claude/.secrets/orla-mcp-registry.env and is never copied here.
 """
 from __future__ import annotations
 
@@ -34,19 +35,22 @@ from datetime import datetime, timezone
 REGISTRY = "https://registry.modelcontextprotocol.io"
 DOMAIN = "orla.finance"
 
-#: Как доказывается домен. Реестр умеет два способа, и оба проверяют подпись
-#: открытым ключом, который он сам забирает с домена: `/v0/auth/dns` читает
-#: TXT-запись, `/v0/auth/http` читает `https://<домен>/.well-known/mcp-registry-auth`.
+#: How the domain is proven. The registry knows two ways, and both check the
+#: signature with a public key it fetches from the domain itself: `/v0/auth/dns`
+#: reads a TXT record, `/v0/auth/http` reads
+#: `https://<domain>/.well-known/mcp-registry-auth`.
 #:
-#: Мы на файловом. TXT-запись на orla.finance стоит с 28.08.2026 и проверяет
-#: ключ, приватная половина которого жила в `~/.claude/.secrets` и не пережила
-#: смену машины; переписать запись нечем, потому что DNS домена на GoDaddy, чей
-#: API отвечает 401. Файл кладётся деплоем сайта и меняется тем же PR, что и
-#: остальной сайт, поэтому он ещё и честнее: ключ виден в истории репозитория.
+#: We use the file. The TXT record on orla.finance has been there since
+#: 28.08.2026 and verifies a key whose private half lived in `~/.claude/.secrets`
+#: and did not survive a change of machine; there is nothing to rewrite the
+#: record with, because the domain's DNS is at GoDaddy, whose API answers 401.
+#: The file is put in place by the site's deploy and changes in the same PR as
+#: the rest of the site, which also makes it the more honest of the two: the key
+#: is visible in the repository's history.
 #:
-#: Старая TXT-запись остаётся мёртвой до тех пор, пока не появится доступ к DNS.
-#: Пока она там, `/v0/auth/dns` отвечает 401 со словами «published record may be
-#: stale», и это ровно то, что произошло 19.09.2026 при первой попытке.
+#: The old TXT record stays dead until there is access to the DNS. While it is
+#: there, `/v0/auth/dns` answers 401 with the words "published record may be
+#: stale", which is exactly what happened on 19.09.2026 at the first attempt.
 AUTH_PATH = "/v0/auth/http"
 SECRETS = pathlib.Path.home() / ".claude" / ".secrets" / "orla-mcp-registry.env"
 SERVER_JSON = pathlib.Path(__file__).resolve().parents[1] / "server.json"
@@ -54,11 +58,11 @@ SERVER_JSON = pathlib.Path(__file__).resolve().parents[1] / "server.json"
 
 def seed() -> bytes:
     if not SECRETS.exists():
-        sys.exit(f"нет {SECRETS}: ключ домена создаётся один раз и живёт только там")
+        sys.exit(f"{SECRETS} is missing: the domain key is created once and lives only there")
     for line in SECRETS.read_text().splitlines():
         if line.startswith("MCP_REGISTRY_ED25519_SEED"):
             return bytes.fromhex(line.split("=", 1)[1].strip())
-    sys.exit(f"в {SECRETS} нет MCP_REGISTRY_ED25519_SEED")
+    sys.exit(f"{SECRETS} has no MCP_REGISTRY_ED25519_SEED")
 
 
 def call(method: str, path: str, body: object, token: str | None = None) -> dict:
@@ -72,29 +76,30 @@ def call(method: str, path: str, body: object, token: str | None = None) -> dict
         with urllib.request.urlopen(request, timeout=30) as response:
             return json.loads(response.read() or b"{}")
     except urllib.error.HTTPError as err:
-        sys.exit(f"реестр ответил {err.code} на {path}: {err.read().decode(errors='replace')[:500]}")
+        sys.exit(f"the registry answered {err.code} to {path}: {err.read().decode(errors='replace')[:500]}")
 
 
 
 def npm_carries_name(package: dict, server_name: str) -> bool:
-    """Реестр принимает пакет в запись, только если ОПУБЛИКОВАННЫЙ package.json
-    несёт mcpName с именем сервера: так он убеждается, что пакет и запись одного
-    владельца. Спрашиваем npm сами, чтобы не ловить отказ публикации и чтобы
-    блок пакета доехал сам, как только выйдет релиз с этим полем."""
+    """The registry accepts a package into a listing only if the PUBLISHED
+    package.json carries mcpName with the server's name: that is how it makes
+    sure the package and the listing have one owner. We ask npm ourselves, so
+    that a publish is not refused and so that the package block goes out on its
+    own as soon as a release with that field is published."""
     if package.get("registryType") != "npm":
-        return True  # проверять умеем только npm; остальное отдаём как есть
+        return True  # npm is the only registry we can check; the rest goes out as is
     url = f"https://registry.npmjs.org/{package['identifier']}/{package['version']}"
     try:
         with urllib.request.urlopen(url, timeout=15) as response:
             published = json.loads(response.read())
     except urllib.error.HTTPError as err:
-        print(f"  npm не знает {package['identifier']}@{package['version']} ({err.code})")
+        print(f"  npm does not know {package['identifier']}@{package['version']} ({err.code})")
         return False
     if published.get("mcpName") == server_name:
         return True
     print(
-        f"  {package['identifier']}@{package['version']} опубликован без "
-        f'mcpName="{server_name}" — реестр такой пакет не примет'
+        f"  {package['identifier']}@{package['version']} is published without "
+        f'mcpName="{server_name}": the registry will not accept this package'
     )
     return False
 
@@ -102,24 +107,24 @@ def npm_carries_name(package: dict, server_name: str) -> bool:
 def main() -> None:
     apply = "--apply" in sys.argv
     document = json.loads(SERVER_JSON.read_text())
-    print(f"имя: {document['name']}  версия: {document['version']}")
+    print(f"name: {document['name']}  version: {document['version']}")
     print(f"remote: {document['remotes'][0]['url']}")
     for pkg in list(document.get("packages", [])):
         if npm_carries_name(pkg, document["name"]):
-            print(f"пакет: {pkg['identifier']}@{pkg['version']} ({pkg['registryType']})")
+            print(f"package: {pkg['identifier']}@{pkg['version']} ({pkg['registryType']})")
         else:
             document["packages"].remove(pkg)
     if not document.get("packages"):
         document.pop("packages", None)
-        print("пакет: не заявлен, запись уходит с одной удалённой дверью")
+        print("package: none declared, the listing goes out with the remote door only")
 
     if not apply:
-        print("\nэто показ. Повторите с --apply.")
+        print("\nthis was a dry run. Repeat with --apply.")
         return
 
-    # Подписывается сама строка времени: реестр проверяет её открытым ключом,
-    # который берёт с домена. Окно у подписи узкое, поэтому берём время
-    # непосредственно перед запросом.
+    # The timestamp string itself is what gets signed: the registry checks it
+    # with the public key it takes from the domain. The signature's window is
+    # narrow, so the time is taken right before the request.
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
     key = Ed25519PrivateKey.from_private_bytes(seed())
@@ -132,11 +137,11 @@ def main() -> None:
         {"domain": DOMAIN, "timestamp": timestamp, "signed_timestamp": signature},
     ).get("registry_token")
     if not token:
-        sys.exit("обмен прошёл, но токена в ответе нет")
-    print("\nдомен подтверждён, токен получен")
+        sys.exit("the exchange went through, but the answer carries no token")
+    print("\ndomain confirmed, token received")
 
     call("POST", "/v0/publish", document, token=token)
-    print(f"опубликовано: {document['name']} {document['version']}")
+    print(f"published: {document['name']} {document['version']}")
 
 
 if __name__ == "__main__":

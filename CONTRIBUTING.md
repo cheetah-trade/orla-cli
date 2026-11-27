@@ -37,6 +37,13 @@ git commit -s
 which appends `Signed-off-by: Your Name <your@email>` to the message. There is
 no contributor agreement to sign and nothing to fax.
 
+## Write it in English
+
+The repository is public, so everything in it is in English: the files, the
+commit messages, and the title and description of the pull request. A squash
+merge puts the title and the commit messages on `main` for good, so CI reads
+them before the merge and the suite reads the files (`scripts/check-english.mjs`).
+
 ## Before you open the PR
 
 ```bash
