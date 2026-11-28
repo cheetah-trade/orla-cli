@@ -13,3 +13,4 @@ target:
 2026-11-25 13 GitHub merged pull requests and the conversations linking them · Task Floor
 2026-11-26 12 GitHub merged pull requests and the conversations linking them · Task Floor
 2026-11-27 12 GitHub merged pull requests and the conversations linking them · Task Floor
+2026-11-28 11 GitHub merged pull requests and the conversations linking them · Task Floor
