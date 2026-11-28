@@ -32,6 +32,23 @@
     },
     {
       "arguments": [
+        "dry_run",
+        "idempotency_key",
+        "names",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": false,
+      "name": "orla_add_people",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "names",
+        "space_id"
+      ]
+    },
+    {
+      "arguments": [
         "amount",
         "currency",
         "description",
@@ -351,6 +368,23 @@
         "name",
         "space_id",
         "target"
+      ]
+    },
+    {
+      "arguments": [
+        "confirmed",
+        "dry_run",
+        "idempotency_key",
+        "rationale",
+        "space_id"
+      ],
+      "destructive": true,
+      "name": "orla_create_invite_link",
+      "readOnly": false,
+      "required": [
+        "confirmed",
+        "idempotency_key",
+        "space_id"
       ]
     },
     {
@@ -1929,6 +1963,28 @@
       "required": [
         "idempotency_key",
         "kind"
+      ]
+    },
+    {
+      "arguments": [
+        "company_name",
+        "country",
+        "dry_run",
+        "idempotency_key",
+        "job",
+        "money",
+        "past",
+        "rationale",
+        "size",
+        "space_id",
+        "timezone"
+      ],
+      "destructive": false,
+      "name": "orla_set_up_company",
+      "readOnly": false,
+      "required": [
+        "idempotency_key",
+        "space_id"
       ]
     },
     {
